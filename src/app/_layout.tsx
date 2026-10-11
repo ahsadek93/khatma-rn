@@ -23,7 +23,10 @@ export default function RootLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { direction: defaultLanguage === "ar" ? "rtl" : "ltr" },
+        contentStyle: {
+          direction: defaultLanguage === "ar" ? "rtl" : "ltr",
+          backgroundColor: "#14271c",
+        },
       }}
     />
   );
