@@ -10,5 +10,12 @@ if (Platform.OS !== "web") {
 }
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { direction: defaultLanguage === "ar" ? "rtl" : "ltr" },
+      }}
+    />
+  );
 }

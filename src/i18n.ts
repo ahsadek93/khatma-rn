@@ -1,13 +1,8 @@
 import { I18n } from "i18n-js";
+import ar from "./locales/ar.json";
+import en from "./locales/en.json";
 
-export const translations = {
-  ar: {
-    welcome: "أهلًا بك!",
-  },
-  en: {
-    welcome: "Welcome!",
-  },
-};
+export const translations = { ar, en };
 
 export type AppLanguage = keyof typeof translations;
 export const defaultLanguage: AppLanguage = "ar";
