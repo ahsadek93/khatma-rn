@@ -1,5 +1,14 @@
 {
   "welcome": "أهلًا بك!",
   "login": "تسجيل الدخول",
-  "logout": "تسجيل الخروج"
+  "logout": "تسجيل الخروج",
+  "onboardingTitle1": "ابدأ رحلتك مع القرآن",
+  "onboardingBody1": "خطوة صغيرة كل يوم تقرّبك من ختمة القرآن الكريم.",
+  "onboardingTitle2": "اجعل وردك اليومي عادة",
+  "onboardingBody2": "اختر وقتًا يناسب يومك، وامضِ في القراءة على مهل.",
+  "onboardingTitle3": "أكمل ختمتك خطوةً خطوة",
+  "onboardingBody3": "ابدأ الآن، واجعل لكل يوم نصيبًا من القرآن.",
+  "onboardingNext": "التالي",
+  "onboardingBack": "السابق",
+  "onboardingLogin": "تسجيل الدخول"
 }
