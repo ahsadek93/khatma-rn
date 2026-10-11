@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "khatma-rn",
-    "slug": "khatma-rn",
+    "name": "Khatma",
+    "slug": "Khatma",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.jpg",
