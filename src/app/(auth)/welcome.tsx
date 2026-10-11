@@ -1,5 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
+import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -35,9 +36,12 @@ export default function Welcome() {
       </View>
 
       <View className="items-center px-2">
-        <View className="mb-10 h-28 w-28 items-center justify-center rounded-full bg-foreground/10">
-          <AppText className="text-6xl text-primary">۞</AppText>
-        </View>
+        <Image
+          accessibilityLabel={i18n.t("logoAlt")}
+          contentFit="contain"
+          source={require("../../../assets/images/logo.png")}
+          style={{ width: 260, height: 142, marginBottom: 24 }}
+        />
         <AppText className="text-center text-3xl text-foreground">
           {i18n.t(steps[step].title)}
         </AppText>

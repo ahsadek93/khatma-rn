@@ -1,5 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
+import { Image } from "expo-image";
 import { useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 
@@ -14,9 +15,12 @@ export default function Login() {
       keyboardShouldPersistTaps="handled"
     >
       <View className="flex-1 justify-center px-6 py-10">
-        <View className="mb-6 h-16 w-16 items-center justify-center self-center rounded-full bg-foreground/10">
-          <AppText className="text-4xl text-primary">۞</AppText>
-        </View>
+        <Image
+          accessibilityLabel={i18n.t("logoAlt")}
+          contentFit="contain"
+          source={require("../../../assets/images/logo.png")}
+          style={{ width: 220, height: 120, alignSelf: "center", marginBottom: 20 }}
+        />
         <View className="flex-row justify-center gap-2">
           <View
             className={`h-1.5 rounded-full ${step === 1 ? "w-8 bg-primary" : "w-2 bg-foreground/20"}`}

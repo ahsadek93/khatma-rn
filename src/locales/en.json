@@ -17,5 +17,6 @@
   "emailLabel": "Email address",
   "emailPlaceholder": "name@example.com",
   "signInCodeLabel": "Sign-in code",
-  "signInCodePlaceholder": "Enter your 6-digit code"
+  "signInCodePlaceholder": "Enter your 6-digit code",
+  "logoAlt": "Khatma logo"
 }

@@ -17,5 +17,6 @@
   "emailLabel": "البريد الإلكتروني",
   "emailPlaceholder": "name@example.com",
   "signInCodeLabel": "رمز تسجيل الدخول",
-  "signInCodePlaceholder": "أدخل الرمز المكوّن من 6 أرقام"
+  "signInCodePlaceholder": "أدخل الرمز المكوّن من 6 أرقام",
+  "logoAlt": "شعار ختمة"
 }
