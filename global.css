@@ -8,8 +8,10 @@
   --color-primary: #947018;
 }
 
-.dark {
-  --color-background: #14271c;
-  --color-foreground: #f7f8f3;
-  --color-primary: #d4af37;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #14271c;
+    --color-foreground: #f7f8f3;
+    --color-primary: #d4af37;
+  }
 }

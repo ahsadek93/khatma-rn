@@ -1,9 +1,12 @@
-import { Stack } from "expo-router";
 import { Cairo_400Regular } from "@expo-google-fonts/cairo/400Regular";
 import { useFonts } from "@expo-google-fonts/cairo/useFonts";
+import { Stack } from "expo-router";
+import { colorScheme } from "nativewind";
 import { I18nManager, Platform } from "react-native";
-import { defaultLanguage } from "../i18n";
 import "../../global.css";
+import { defaultLanguage } from "../i18n";
+
+colorScheme.set("dark");
 
 if (Platform.OS !== "web") {
   const isRTL = defaultLanguage === "ar";
