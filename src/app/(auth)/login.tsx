@@ -1,6 +1,7 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
 import { Image } from "expo-image";
+import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 
@@ -19,7 +20,12 @@ export default function Login() {
           accessibilityLabel={i18n.t("logoAlt")}
           contentFit="contain"
           source={require("../../../assets/images/logo.png")}
-          style={{ width: 220, height: 120, alignSelf: "center", marginBottom: 20 }}
+          style={{
+            width: 220,
+            height: 120,
+            alignSelf: "center",
+            marginBottom: 20,
+          }}
         />
         <View className="flex-row justify-center gap-2">
           <View
@@ -87,15 +93,16 @@ export default function Login() {
                   underlineColorAndroid="transparent"
                 />
               </View>
-              <View
-                accessibilityRole="button"
-                accessibilityState={{ disabled: true }}
-                className="min-h-14 items-center justify-center rounded-xl bg-primary"
-              >
-                <AppText className="text-lg text-background">
-                  {i18n.t("login")}
-                </AppText>
-              </View>
+              <Link href="/(app)/home" asChild>
+                <Pressable
+                  accessibilityRole="button"
+                  className="min-h-14 items-center justify-center rounded-xl bg-primary"
+                >
+                  <AppText className="text-lg text-background">
+                    {i18n.t("login")}
+                  </AppText>
+                </Pressable>
+              </Link>
               <Pressable
                 accessibilityRole="button"
                 className="min-h-12 items-center justify-center"
