@@ -10,5 +10,12 @@
   "onboardingBody3": "ابدأ الآن، واجعل لكل يوم نصيبًا من القرآن.",
   "onboardingNext": "التالي",
   "onboardingBack": "السابق",
-  "onboardingLogin": "تسجيل الدخول"
+  "onboardingLogin": "تسجيل الدخول",
+  "loginDescription": "أدخل بريدك الإلكتروني للمتابعة.",
+  "signInCodeDescription": "أدخل رمز تسجيل الدخول للمتابعة.",
+  "continue": "متابعة",
+  "emailLabel": "البريد الإلكتروني",
+  "emailPlaceholder": "name@example.com",
+  "signInCodeLabel": "رمز تسجيل الدخول",
+  "signInCodePlaceholder": "أدخل الرمز المكوّن من 6 أرقام"
 }

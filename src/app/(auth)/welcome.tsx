@@ -29,7 +29,7 @@ export default function Welcome() {
             />
           ))}
         </View>
-        <AppText className="mt-3 text-sm text-foreground/70">
+        <AppText className="mt-3 text-sm text-foreground">
           {step + 1} / {steps.length}
         </AppText>
       </View>
@@ -75,7 +75,7 @@ export default function Welcome() {
             className="min-h-12 items-center justify-center"
             onPress={() => setStep((current) => current - 1)}
           >
-            <AppText className="text-base text-foreground/70">
+            <AppText className="text-base text-foreground">
               {i18n.t("onboardingBack")}
             </AppText>
           </Pressable>

@@ -10,5 +10,12 @@
   "onboardingBody3": "Start now and make room for the Quran in every day.",
   "onboardingNext": "Next",
   "onboardingBack": "Back",
-  "onboardingLogin": "Sign in"
+  "onboardingLogin": "Sign in",
+  "loginDescription": "Enter your email to continue.",
+  "signInCodeDescription": "Enter your sign-in code to continue.",
+  "continue": "Continue",
+  "emailLabel": "Email address",
+  "emailPlaceholder": "name@example.com",
+  "signInCodeLabel": "Sign-in code",
+  "signInCodePlaceholder": "Enter your 6-digit code"
 }
