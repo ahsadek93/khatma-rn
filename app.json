@@ -4,14 +4,14 @@
     "slug": "khatma-rn",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/app-icon.jfif",
+    "icon": "./assets/images/app-icon.jpg",
     "scheme": "khatmarn",
     "userInterfaceStyle": "dark",
     "ios": {
-      "icon": "./assets/images/app-icon.jfif"
+      "icon": "./assets/images/app-icon.jpg"
     },
     "android": {
-      "icon": "./assets/images/app-icon.jfif",
+      "icon": "./assets/images/app-icon.jpg",
       "adaptiveIcon": {
         "backgroundColor": "#121E1A",
         "foregroundImage": "./assets/images/logo.png"
@@ -21,7 +21,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/app-icon.jfif"
+      "favicon": "./assets/images/app-icon.jpg"
     },
     "plugins": [
       "expo-router",
