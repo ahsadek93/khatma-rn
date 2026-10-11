@@ -5,6 +5,9 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      fontFamily: {
+        cairo: ["Cairo_400Regular"],
+      },
       colors: {
         background: "var(--color-background)",
         foreground: "var(--color-foreground)",
