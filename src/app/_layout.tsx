@@ -3,6 +3,7 @@ import { useFonts } from "@expo-google-fonts/cairo/useFonts";
 import { Stack } from "expo-router";
 import { colorScheme } from "nativewind";
 import { I18nManager, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import "../../global.css";
 import { defaultLanguage } from "../i18n";
 
@@ -20,14 +21,16 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: {
-          direction: defaultLanguage === "ar" ? "rtl" : "ltr",
-          backgroundColor: "#14271c",
-        },
-      }}
-    />
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            direction: defaultLanguage === "ar" ? "rtl" : "ltr",
+            backgroundColor: "#14271c",
+          },
+        }}
+      />
+    </SafeAreaView>
   );
 }
