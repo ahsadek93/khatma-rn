@@ -5,6 +5,7 @@
 :root {
   --color-background: #ffffff;
   --color-foreground: #111827;
+  --color-secondary-foreground: #4b5563;
   --color-primary: #947018;
 }
 
@@ -12,6 +13,7 @@
   :root {
     --color-background: #14271c;
     --color-foreground: #f7f8f3;
+    --color-secondary-foreground: #b8c7bc;
     --color-primary: #d4af37;
   }
 }
