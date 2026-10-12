@@ -2,18 +2,23 @@ import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
 import { View } from "react-native";
 
-export function ActiveKhatmaSection() {
+export function ActiveKhatmaSection({ hasActiveKhatma = true }: { hasActiveKhatma?: boolean }) {
   return (
     <View className="mt-7">
-      <View className="flex-row items-center justify-between">
-        <AppText className="text-xl font-bold text-foreground">{i18n.t("activeKhatma")}</AppText>
-        <View className="rounded-full bg-primary/15 px-3 py-1">
-          <AppText className="text-xs font-bold text-primary">{i18n.t("inProgress")}</AppText>
+      {!hasActiveKhatma ? (
+        <View className="rounded-3xl border border-subtle-border bg-surface p-5">
+          <AppText className="text-lg font-bold text-foreground">{i18n.t("noActiveKhatmaTitle")}</AppText>
+          <AppText className="mt-1 text-sm text-secondary-foreground">{i18n.t("noActiveKhatmaBody")}</AppText>
         </View>
-      </View>
-
-      <View className="mt-3 rounded-3xl border border-primary/30 bg-surface p-5">
-        <AppText className="text-2xl font-bold text-foreground">{i18n.t("activeGroupName")}</AppText>
+      ) : (
+      <View className="rounded-3xl border border-primary/30 bg-surface p-5">
+        <View className="flex-row items-center justify-between">
+          <AppText className="text-sm font-bold text-primary">{i18n.t("activeKhatma")}</AppText>
+          <View className="rounded-full bg-primary/15 px-3 py-1">
+            <AppText className="text-xs font-bold text-primary">{i18n.t("inProgress")}</AppText>
+          </View>
+        </View>
+        <AppText className="mt-4 text-2xl font-bold text-foreground">{i18n.t("activeGroupName")}</AppText>
         <AppText className="mt-1 text-sm text-secondary-foreground">{i18n.t("activeGroupMembers", { count: 12 })}</AppText>
         <View className="mt-5 flex-row items-center justify-between">
           <AppText className="text-sm text-secondary-foreground">{i18n.t("completedJuz")}</AppText>
@@ -30,6 +35,7 @@ export function ActiveKhatmaSection() {
           <AppText className="text-sm font-bold text-primary">{i18n.t("viewKhatma")}</AppText>
         </View>
       </View>
+      )}
     </View>
   );
 }
