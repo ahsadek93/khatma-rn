@@ -21,7 +21,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       <Stack
         screenOptions={{
           headerShown: false,
