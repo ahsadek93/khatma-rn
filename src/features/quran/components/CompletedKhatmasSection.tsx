@@ -16,7 +16,7 @@ export function CompletedKhatmasSection() {
         <AppText className="text-sm text-secondary-foreground">3</AppText>
       </View>
       {completedKhatmas.slice(0, 3).map(({ name, date, members }) => (
-        <View key={name} className="mt-3 flex-row items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
+        <View key={name} className="mt-3 flex-row items-center justify-between rounded-2xl border border-subtle-border bg-surface p-4">
           <View>
             <AppText className="text-base font-bold text-foreground">{i18n.t(name)}</AppText>
             <AppText className="mt-1 text-sm text-secondary-foreground">{i18n.t(date)} - {i18n.t("groupMemberCount", { count: members })}</AppText>

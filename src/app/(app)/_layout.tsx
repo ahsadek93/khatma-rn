@@ -2,21 +2,33 @@ import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { i18n } from "@/i18n";
 import { useReducedMotion } from "react-native-reanimated";
+import { useSettings } from "@/stores/settings";
+import { useUnstableNativeVariable } from "nativewind";
+import { Platform } from "react-native";
 
 export default function AppLayout() {
   const reduceMotion = useReducedMotion();
+  useSettings();
+  const background = useUnstableNativeVariable("--color-background");
+  const primary = useUnstableNativeVariable("--color-primary");
+  const tabInactive = useUnstableNativeVariable("--color-tab-inactive");
+  const subtleBorder = useUnstableNativeVariable("--color-subtle-border");
+  const backgroundColor = Platform.select({ web: "var(--color-background)", default: background });
+  const activeColor = Platform.select({ web: "var(--color-primary)", default: primary });
+  const inactiveColor = Platform.select({ web: "var(--color-tab-inactive)", default: tabInactive });
+  const borderColor = Platform.select({ web: "var(--color-subtle-border)", default: subtleBorder });
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        sceneStyle: { backgroundColor: "#14271c" },
-        tabBarActiveTintColor: "#d4af37",
-        tabBarInactiveTintColor: "#f7f8f3",
+        sceneStyle: { backgroundColor },
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
         tabBarLabelStyle: { fontFamily: "Cairo_400Regular", fontSize: 12 },
         tabBarStyle: {
-          backgroundColor: "#14271c",
-          borderTopColor: "rgba(247, 248, 243, 0.1)",
+          backgroundColor,
+          borderTopColor: borderColor,
         },
         animation: reduceMotion ? "none" : "fade",
         transitionSpec: {

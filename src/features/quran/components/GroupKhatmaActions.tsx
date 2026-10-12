@@ -4,7 +4,7 @@ import { View } from "react-native";
 
 export function GroupKhatmaActions() {
   return (
-    <View className="border-t border-white/10 px-5 py-4">
+    <View className="border-t border-subtle-border px-5 py-4">
       <AppText className="mb-3 text-xl font-bold text-foreground">{i18n.t("moreKhatmas")}</AppText>
       <View className="flex-row gap-3">
         <View className="flex-1 items-center rounded-2xl bg-primary px-3 py-4">

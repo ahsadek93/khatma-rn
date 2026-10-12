@@ -4,8 +4,10 @@ import { ScrollView, View } from "react-native";
 import { ActiveKhatmaSection } from "./ActiveKhatmaSection";
 import { CompletedKhatmasSection } from "./CompletedKhatmasSection";
 import { GroupKhatmaActions } from "./GroupKhatmaActions";
+import { useSettings } from "@/stores/settings";
 
 export function QuranDashboard() {
+  useSettings();
   return (
     <View className="flex-1 bg-background">
       <ScrollView className="flex-1" contentContainerClassName="px-5 pb-5 pt-6">
