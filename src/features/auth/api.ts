@@ -15,3 +15,11 @@ export async function verifySignInCode(email: string, token: string) {
 
   return supabase.auth.verifyOtp({ email, token, type: "email" });
 }
+
+export async function signOut() {
+  if (!isSupabaseConfigured || !supabase) {
+    return { error: new Error() };
+  }
+
+  return supabase.auth.signOut();
+}

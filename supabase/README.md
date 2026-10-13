@@ -1,7 +1,8 @@
 # Supabase setup
 
-The app uses Supabase Auth email OTP for sign-in. Auth is hosted by Supabase,
-so there are no database migrations required for this first flow.
+The app uses Supabase Auth email OTP for sign-in and a `public.profiles` table
+for user-editable profile data. Apply the SQL migrations in `supabase/migrations`
+to your Supabase project before using profile settings.
 
 1. Create a Supabase project and copy its Project URL and publishable key.
 2. Copy `.env.example` to `.env` and set `EXPO_PUBLIC_SUPABASE_URL` and
@@ -26,3 +27,8 @@ so there are no database migrations required for this first flow.
 The mobile client and OTP calls live in `src/lib`. Keep database migrations,
 Edge Functions, and other server-side Supabase code in this directory as they
 are added.
+
+`profiles.id` references `auth.users.id`; profile rows are created for new and
+existing users by the migration. Row level security lets each authenticated
+user access only their own row. The app stores the displayed name in
+`profiles.display_name` and never accesses `auth.users` directly.
