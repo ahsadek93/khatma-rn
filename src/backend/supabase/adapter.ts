@@ -21,7 +21,9 @@ function mapError(error: unknown): BackendError {
   if (providerError?.code === "23505" || providerError?.code === "23503") {
     return { code: "conflict", message };
   }
-  if (providerError?.status === 401) return { code: "unauthenticated", message };
+  if (providerError?.status === 401 || /authsessionmissing|not authenticated|no signed-in user/i.test(message)) {
+    return { code: "unauthenticated", message };
+  }
   if (providerError?.status && providerError.status >= 500) {
     return { code: "unavailable", message };
   }
