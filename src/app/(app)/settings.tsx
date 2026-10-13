@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 
 export default function Settings() {
-  const { theme, setTheme, language, setLanguage } = useSettings();
+  const { theme, setTheme } = useSettings();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -130,24 +130,6 @@ export default function Settings() {
           >
             <AppText className="font-bold text-foreground">
               {i18n.t(option)}
-            </AppText>
-          </Pressable>
-        ))}
-      </View>
-      <AppText className="mb-3 mt-8 text-lg font-bold text-foreground">
-        {i18n.t("language")}
-      </AppText>
-      <View className="flex-row gap-3">
-        {(["ar", "en"] as const).map((option) => (
-          <Pressable
-            key={option}
-            accessibilityRole="button"
-            accessibilityState={{ selected: language === option }}
-            onPress={() => setLanguage(option)}
-            className={`flex-1 items-center rounded-2xl border px-4 py-3 ${language === option ? "border-primary bg-primary/15" : "border-primary/30"}`}
-          >
-            <AppText className="font-bold text-foreground">
-              {i18n.t(option === "ar" ? "arabic" : "english")}
             </AppText>
           </Pressable>
         ))}
