@@ -1,8 +1,8 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useCallback, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { getMyActiveKhatma, type KhatmaSummary } from "@/features/khatma/api";
 import { getKhatmaQuranProgress } from "../api";
 import { SkeletonBlock } from "./SkeletonBlock";
@@ -96,7 +96,12 @@ export function ActiveKhatmaSection() {
           </View>
         </View>
       ) : (
-        <View className="rounded-3xl border border-primary/30 bg-surface p-5">
+        <Pressable
+          className="rounded-3xl border border-primary/30 bg-surface p-5"
+          onPress={() => router.push({ pathname: "/(app)/khatma/[id]", params: { id: khatma.id, name: khatma.name, status: "active" } })}
+          accessibilityRole="button"
+          accessibilityLabel={`${khatma.name}, ${i18n.t("viewKhatma")}`}
+        >
           <View className="flex-row items-center justify-between">
             <AppText className="text-sm font-bold text-primary">{i18n.t("activeKhatma")}</AppText>
             <View className="rounded-full bg-primary/15 px-3 py-1">
@@ -119,7 +124,7 @@ export function ActiveKhatmaSection() {
             </View>
             <AppText className="text-sm font-bold text-primary">{i18n.t("viewKhatma")}</AppText>
           </View>
-        </View>
+        </Pressable>
       )}
     </View>
   );

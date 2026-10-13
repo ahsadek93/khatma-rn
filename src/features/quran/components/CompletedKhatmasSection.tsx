@@ -1,6 +1,7 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { getMyCompletedKhatmas, type CompletedKhatma } from "@/features/khatma/api";
 import { SkeletonBlock } from "./SkeletonBlock";
@@ -52,9 +53,12 @@ export function CompletedKhatmasSection() {
         </View>
       ) : khatmas.length ? (
         khatmas.slice(0, 3).map(({ id, name, completedAt }) => (
-          <View
+          <Pressable
             key={id}
             className="mt-3 rounded-2xl border border-subtle-border bg-surface px-4 py-3"
+            onPress={() => router.push({ pathname: "/(app)/khatma/[id]", params: { id, name, status: "completed", completedAt } })}
+            accessibilityRole="button"
+            accessibilityLabel={`${name}, ${i18n.t("completedBadge")}`}
           >
             <AppText className="text-sm font-bold text-foreground">
               {name}
@@ -62,7 +66,7 @@ export function CompletedKhatmasSection() {
             <AppText className="mt-1 text-xs text-secondary-foreground">
               {completedAt ? i18n.t("khatmaCompletedAt", { date: new Date(completedAt).toLocaleDateString(i18n.locale) }) : i18n.t("completedBadge")}
             </AppText>
-          </View>
+          </Pressable>
         ))
       ) : (
         <View className="mt-3 h-[216px] justify-center rounded-2xl border border-subtle-border bg-surface p-5">

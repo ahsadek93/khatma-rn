@@ -83,5 +83,13 @@
     "khatmaNameLabel": "اسم الختمة",
     "khatmaNamePlaceholder": "مثال: ختمة العائلة",
     "createKhatmaButton": "إنشاء الختمة",
-    "createKhatmaError": "تعذّر إنشاء الختمة. حاول مجددًا."
+    "createKhatmaError": "تعذّر إنشاء الختمة. حاول مجددًا.",
+    "khatmaDetails": "تفاصيل الختمة",
+    "khatmaJuzTitle": "تقدم القرآن",
+    "khatmaJuzActiveHint": "تعرّف على الأجزاء المكتملة والمحجوزة والمتاحة.",
+    "khatmaJuzCompletedHint": "اكتملت جميع أجزاء هذه الختمة.",
+    "khatmaDetailsLoadError": "تعذّر تحميل تقدم الختمة. حاول مجددًا لاحقًا.",
+    "juzCompleted": "مكتمل",
+    "juzClaimed": "محجوز",
+    "juzAvailable": "متاح"
 }

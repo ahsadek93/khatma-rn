@@ -83,5 +83,13 @@
     "khatmaNameLabel": "Khatma name",
     "khatmaNamePlaceholder": "For example, Family Khatma",
     "createKhatmaButton": "Create Khatma",
-    "createKhatmaError": "We couldn't create your Khatma. Try again."
+    "createKhatmaError": "We couldn't create your Khatma. Try again.",
+    "khatmaDetails": "Khatma details",
+    "khatmaJuzTitle": "Quran progress",
+    "khatmaJuzActiveHint": "See which Juz are complete, claimed, or available.",
+    "khatmaJuzCompletedHint": "All Juz completed in this Khatma.",
+    "khatmaDetailsLoadError": "We couldn't load this Khatma's progress. Try again later.",
+    "juzCompleted": "Done",
+    "juzClaimed": "Claimed",
+    "juzAvailable": "Open"
 }
