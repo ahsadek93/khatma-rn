@@ -1,6 +1,6 @@
-import { backend } from "@/backend";
-import { backendNotConfigured } from "@/backend/results";
-export type { KhatmaQuranProgress, QuranJuz } from "@/backend/contracts";
+import { backend } from "@/data";
+import { backendNotConfigured } from "@/data/results";
+export type { KhatmaQuranProgress, QuranJuz } from "@/data/contracts";
 
 export async function getKhatmaJuz(khatmaId: string) {
   return backend ? backend.quran.getKhatmaJuz(khatmaId) : backendNotConfigured();

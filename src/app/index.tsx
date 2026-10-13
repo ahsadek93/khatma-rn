@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Redirect } from "expo-router";
-import { backend, isBackendConfigured } from "@/backend";
+import { backend, isBackendConfigured } from "@/data";
 
 export default function Index() {
   const [destination, setDestination] = useState<"/(auth)/welcome" | "/(app)/home" | null>(

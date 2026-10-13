@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { sendSignInCode, verifySignInCode } from "@/features/auth/api";
-import { isBackendConfigured } from "@/backend";
+import { isBackendConfigured } from "@/data";
 
 export default function Login() {
   const [step, setStep] = useState(1);

@@ -1,5 +1,5 @@
-import { backend } from "@/backend";
-import { backendNotConfigured } from "@/backend/results";
+import { backend } from "@/data";
+import { backendNotConfigured } from "@/data/results";
 
 export async function sendSignInCode(email: string) {
   return backend ? backend.auth.sendSignInCode(email) : backendNotConfigured();

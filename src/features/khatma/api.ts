@@ -1,6 +1,6 @@
-import { backend } from "@/backend";
-import { backendNotConfigured } from "@/backend/results";
-export type { CompletedKhatma, KhatmaMember, KhatmaSummary } from "@/backend/contracts";
+import { backend } from "@/data";
+import { backendNotConfigured } from "@/data/results";
+export type { CompletedKhatma, KhatmaMember, KhatmaSummary } from "@/data/contracts";
 
 export async function createKhatma(name: string) {
   return backend ? backend.khatma.createKhatma(name) : backendNotConfigured();

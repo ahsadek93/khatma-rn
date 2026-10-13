@@ -1,5 +1,5 @@
-import { backend } from "@/backend";
-import { backendNotConfigured, backendSuccess } from "@/backend/results";
+import { backend } from "@/data";
+import { backendNotConfigured, backendSuccess } from "@/data/results";
 
 export async function getCurrentProfile() {
   if (!backend) return backendNotConfigured();
