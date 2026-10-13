@@ -1,7 +1,8 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
 import { View } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import { getMyActiveKhatma, type KhatmaSummary } from "@/features/khatma/api";
 import { getKhatmaQuranProgress } from "../api";
 import { SkeletonBlock } from "./SkeletonBlock";
@@ -14,8 +15,11 @@ export function ActiveKhatmaSection() {
   const [hasError, setHasError] = useState(false);
   const progress = khatma ? Math.round((khatma.completedJuz / 30) * 100) : 0;
 
-  useEffect(() => {
+  const loadKhatma = useCallback(() => {
     let isCurrent = true;
+    setIsLoading(true);
+    setHasError(false);
+    setKhatma(null);
     void (async () => {
       const { data: active, error } = await getMyActiveKhatma();
       if (!isCurrent) return;
@@ -44,6 +48,8 @@ export function ActiveKhatmaSection() {
     });
     return () => { isCurrent = false; };
   }, []);
+
+  useFocusEffect(loadKhatma);
 
   return (
     <View className="mt-7">

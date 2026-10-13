@@ -50,6 +50,7 @@ export default function AppLayout() {
           ),
         }}
       />
+      <Tabs.Screen name="create-khatma" options={{ href: null }} />
       <Tabs.Screen
         name="zikr"
         options={{

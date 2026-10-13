@@ -76,5 +76,12 @@
     "viewMore": "View more",
     "moreKhatmas": "Read together",
     "createGroupKhatma": "Create a group",
-    "joinGroupKhatma": "Join a group"
+    "joinGroupKhatma": "Join a group",
+    "back": "Back",
+    "createKhatmaTitle": "Create a group Khatma",
+    "createKhatmaDescription": "Give your Khatma a name so family and friends can find and join it.",
+    "khatmaNameLabel": "Khatma name",
+    "khatmaNamePlaceholder": "For example, Family Khatma",
+    "createKhatmaButton": "Create Khatma",
+    "createKhatmaError": "We couldn't create your Khatma. Try again."
 }

@@ -76,5 +76,12 @@
     "viewMore": "عرض المزيد",
     "moreKhatmas": "اقرأوا معًا",
     "createGroupKhatma": "إنشاء ختمة جماعية",
-    "joinGroupKhatma": "الانضمام إلى ختمة"
+    "joinGroupKhatma": "الانضمام إلى ختمة",
+    "back": "رجوع",
+    "createKhatmaTitle": "إنشاء ختمة جماعية",
+    "createKhatmaDescription": "اختر اسمًا لختمتك كي يتمكن الأهل والأصدقاء من العثور عليها والانضمام إليها.",
+    "khatmaNameLabel": "اسم الختمة",
+    "khatmaNamePlaceholder": "مثال: ختمة العائلة",
+    "createKhatmaButton": "إنشاء الختمة",
+    "createKhatmaError": "تعذّر إنشاء الختمة. حاول مجددًا."
 }
