@@ -1,13 +1,69 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { sendSignInCode, verifySignInCode } from "@/features/auth/api";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 export default function Login() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  async function requestCode() {
+    setMessage("");
+    if (!isSupabaseConfigured) {
+      setMessage(i18n.t("authNotConfigured"));
+      return;
+    }
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setMessage(i18n.t("invalidEmail"));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await sendSignInCode(normalizedEmail);
+      if (error) {
+        setMessage(i18n.t("authRequestError"));
+        return;
+      }
+      setStep(2);
+      setMessage(i18n.t("signInCodeSent"));
+    } catch {
+      setMessage(i18n.t("authRequestError"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function submitCode() {
+    setMessage("");
+    if (!/^\d{8}$/.test(code)) {
+      setMessage(i18n.t("invalidCode"));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await verifySignInCode(normalizedEmail, code);
+      if (error) {
+        setMessage(i18n.t("authVerifyError"));
+        return;
+      }
+      router.replace("/(app)/home");
+    } catch {
+      setMessage(i18n.t("authVerifyError"));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -68,11 +124,13 @@ export default function Login() {
               </View>
               <Pressable
                 accessibilityRole="button"
+                accessibilityState={{ disabled: loading }}
                 className="min-h-14 items-center justify-center rounded-xl bg-primary"
-                onPress={() => setStep(2)}
+                disabled={loading}
+                onPress={requestCode}
               >
                 <AppText className="text-lg text-background">
-                  {i18n.t("continue")}
+                  {i18n.t(loading ? "loading" : "continue")}
                 </AppText>
               </Pressable>
             </>
@@ -86,23 +144,31 @@ export default function Login() {
                   accessibilityLabel={i18n.t("signInCodeLabel")}
                   className="h-14 rounded-xl border border-foreground/20 bg-foreground/5 px-4 font-cairo text-base tracking-[0.3em] text-foreground"
                   keyboardType="number-pad"
-                  maxLength={6}
+                  maxLength={8}
+                  onChangeText={setCode}
                   placeholder={i18n.t("signInCodePlaceholder")}
                   placeholderTextColor="#B8C9BC"
                   textAlign="center"
                   underlineColorAndroid="transparent"
+                  value={code}
                 />
               </View>
-              <Link href="/(app)/home" asChild>
-                <Pressable
-                  accessibilityRole="button"
-                  className="min-h-14 items-center justify-center rounded-xl bg-primary"
-                >
-                  <AppText className="text-lg text-background">
-                    {i18n.t("login")}
-                  </AppText>
-                </Pressable>
-              </Link>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: loading }}
+                className="min-h-14 items-center justify-center rounded-xl bg-primary"
+                disabled={loading}
+                onPress={submitCode}
+              >
+                <AppText className="text-lg text-background">
+                  {i18n.t(loading ? "loading" : "login")}
+                </AppText>
+              </Pressable>
+              <Pressable accessibilityRole="button" disabled={loading} onPress={requestCode}>
+                <AppText className="text-center text-base text-foreground">
+                  {i18n.t("resendCode")}
+                </AppText>
+              </Pressable>
               <Pressable
                 accessibilityRole="button"
                 className="min-h-12 items-center justify-center"
@@ -113,6 +179,11 @@ export default function Login() {
                 </AppText>
               </Pressable>
             </>
+          )}
+          {!!message && (
+            <AppText accessibilityRole="alert" className="text-center text-base text-foreground">
+              {message}
+            </AppText>
           )}
         </View>
       </View>
