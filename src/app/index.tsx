@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { Redirect } from "expo-router";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { backend, isBackendConfigured } from "@/backend";
 
 export default function Index() {
   const [destination, setDestination] = useState<"/(auth)/welcome" | "/(app)/home" | null>(
-    isSupabaseConfigured ? null : "/(auth)/welcome",
+    isBackendConfigured ? null : "/(auth)/welcome",
   );
 
   useEffect(() => {
     let active = true;
 
-    if (!isSupabaseConfigured || !supabase) return;
+    if (!backend) return;
 
-    void supabase.auth.getSession().then(({ data }) => {
+    void backend.auth.getCurrentUser().then(({ data, error }) => {
       if (active) {
-        setDestination(data.session ? "/(app)/home" : "/(auth)/welcome");
+        setDestination(!error && data ? "/(app)/home" : "/(auth)/welcome");
       }
     });
 

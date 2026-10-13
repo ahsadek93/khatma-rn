@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { sendSignInCode, verifySignInCode } from "@/features/auth/api";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isBackendConfigured } from "@/backend";
 
 export default function Login() {
   const [step, setStep] = useState(1);
@@ -18,7 +18,7 @@ export default function Login() {
 
   async function requestCode() {
     setMessage("");
-    if (!isSupabaseConfigured) {
+    if (!isBackendConfigured) {
       setMessage(i18n.t("authNotConfigured"));
       return;
     }

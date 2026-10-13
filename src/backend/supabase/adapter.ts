@@ -44,8 +44,8 @@ export function createSupabaseBackend(client: SupabaseClient): AppBackend {
     auth: {
       async getCurrentUser() {
         try {
-          const { data, error } = await client.auth.getUser();
-          return error ? failed(error) : backendSuccess(currentUser(data.user));
+          const { data, error } = await client.auth.getSession();
+          return error ? failed(error) : backendSuccess(currentUser(data.session?.user ?? null));
         } catch (error) {
           return failed(error);
         }

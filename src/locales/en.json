@@ -20,7 +20,7 @@
     "loading": "Please wait...",
     "invalidEmail": "Enter a valid email address.",
     "invalidCode": "Enter the 8-digit code from your email.",
-    "authNotConfigured": "Add your Supabase URL and publishable key to the local environment file.",
+    "authNotConfigured": "Sign-in is not configured yet. Please contact support.",
     "authRequestError": "We couldn't send a code. Check your email and try again.",
     "authVerifyError": "That code could not be verified. Check it and try again.",
     "signOutError": "We couldn't sign you out. Try again.",
