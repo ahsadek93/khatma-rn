@@ -26,7 +26,7 @@ export default function Settings() {
         if (!active) return;
         if (error) setMessage(i18n.t("profileLoadError"));
         if (data) {
-          setDisplayName(data.display_name);
+          setDisplayName(data.displayName);
           setEmail(data.email);
         }
         setLoadingProfile(false);

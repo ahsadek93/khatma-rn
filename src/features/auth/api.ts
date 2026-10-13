@@ -1,25 +1,14 @@
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { backend } from "@/backend";
+import { backendNotConfigured } from "@/backend/results";
 
 export async function sendSignInCode(email: string) {
-  if (!isSupabaseConfigured || !supabase) {
-    return { error: new Error() };
-  }
-
-  return supabase.auth.signInWithOtp({ email });
+  return backend ? backend.auth.sendSignInCode(email) : backendNotConfigured();
 }
 
 export async function verifySignInCode(email: string, token: string) {
-  if (!isSupabaseConfigured || !supabase) {
-    return { error: new Error() };
-  }
-
-  return supabase.auth.verifyOtp({ email, token, type: "email" });
+  return backend ? backend.auth.verifySignInCode(email, token) : backendNotConfigured();
 }
 
 export async function signOut() {
-  if (!isSupabaseConfigured || !supabase) {
-    return { error: new Error() };
-  }
-
-  return supabase.auth.signOut();
+  return backend ? backend.auth.signOut() : backendNotConfigured();
 }

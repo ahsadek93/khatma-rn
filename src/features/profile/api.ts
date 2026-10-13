@@ -1,29 +1,12 @@
-import { supabase } from "@/lib/supabase";
+import { backend } from "@/backend";
+import { backendNotConfigured, backendSuccess } from "@/backend/results";
 
 export async function getCurrentProfile() {
-  if (!supabase) return { data: null, error: new Error("Supabase is not configured") };
-
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) return { data: null, error: userError ?? new Error("No signed-in user") };
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  return { data: data ? { ...data, email: user.email ?? "" } : { display_name: "", email: user.email ?? "" }, error };
+  if (!backend) return backendNotConfigured();
+  const result = await backend.profile.getCurrentProfile();
+  return result.error ? result : backendSuccess({ displayName: result.data.displayName, email: result.data.email });
 }
 
 export async function saveCurrentDisplayName(displayName: string) {
-  if (!supabase) return { error: new Error("Supabase is not configured") };
-
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) return { error: userError ?? new Error("No signed-in user") };
-
-  const { error } = await supabase
-    .from("profiles")
-    .upsert({ id: user.id, display_name: displayName }, { onConflict: "id" });
-
-  return { error };
+  return backend ? backend.profile.saveCurrentDisplayName(displayName) : backendNotConfigured();
 }
