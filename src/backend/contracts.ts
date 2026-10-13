@@ -27,7 +27,7 @@ export interface ProfileBackend {
 
 export interface KhatmaBackend {
   createKhatma(name: string): Promise<BackendResult<{ id: string; name: string }>>;
-  joinKhatmaByCode(code: string): Promise<BackendResult<unknown>>;
+  joinKhatmaByCode(code: string): Promise<BackendResult<string>>;
   getKhatmaMembers(khatmaId: string): Promise<BackendResult<KhatmaMember[]>>;
   getKhatmaJoinCode(khatmaId: string): Promise<BackendResult<string | null>>;
   getMyActiveKhatma(): Promise<BackendResult<KhatmaSummary | null>>;
