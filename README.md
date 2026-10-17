@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# Khatma
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Khatma is a mobile-first Quran reading app built with Expo and React Native. It helps people read together in group Khatmas and follow progress across all 30 Juz.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Sign in with an email verification code.
+- Create a group Khatma or join one with an invite code.
+- View group membership and Quran progress.
+- Tap a Juz to see its status and claimant. Claim an available Juz or mark your own claimed Juz complete.
+- Set a display name and choose the app language and appearance.
+- Use the Zikr screen.
+- English and Arabic translations.
+
+## Requirements
+
+- Node.js compatible with the installed Expo SDK.
+- A Supabase project for authentication and shared Khatma data.
+
+## Setup
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Copy `.env.example` to `.env` and set the Supabase project URL and publishable key:
 
-   ```bash
-   npx expo start
+   ```text
+   EXPO_PUBLIC_SUPABASE_URL=your-project-url
+   EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
    ```
 
-In the output, you'll find options to open the app in a
+3. Apply the SQL files in `supabase/migrations` to your Supabase project in filename order. This includes `20261017000000_khatma_juz_claimant_names.sql`, which provides claimant names to members of the relevant Khatma.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+4. Configure Supabase email OTP as described in [Supabase setup](supabase/README.md).
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Run the app
 
-## Get a fresh project
-
-When you're ready, run:
+Start Expo:
 
 ```bash
-npm run reset-project
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Open the project in a development build, Android emulator, iOS simulator, or Expo Go. Native module compatibility may vary in Expo Go; use a development build when needed.
 
-### Other setup steps
+## Checks
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npx expo lint
+npx tsc --noEmit
+```
 
-## Learn more
+## Project structure
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `src/app/` — Expo Router screens and layouts.
+- `src/features/` — authentication, Khatma, profile, and Quran data access and UI.
+- `src/data/` — backend contracts and Supabase adapter.
+- `src/locales/` — English and Arabic translations.
+- `supabase/migrations/` — database schema, access policies, and functions.

@@ -24,18 +24,22 @@ profile settings or the Quran dashboard.
    returning account. The app verifies the eight-digit code with
    `verifyOtp({ email, token, type: "email" })`.
 
-The mobile client and OTP calls live in `src/lib`. Keep database migrations,
-Edge Functions, and other server-side Supabase code in this directory as they
-are added.
+The Supabase client and adapter live in `src/data/supabase`; feature APIs live
+in `src/features`. Keep database migrations, Edge Functions, and other
+server-side Supabase code in this directory.
 
 `profiles.id` references `auth.users.id`; profile rows are created for new and
 existing users by the migration. Row level security lets each authenticated
-user access only their own row. The app stores the displayed name in
-`profiles.display_name` and never accesses `auth.users` directly.
+user access only their own profile row. The `get_khatma_juz_details` function
+returns claimant display names only to members of that Khatma. The app stores
+the displayed name in `profiles.display_name` and never accesses `auth.users`
+directly.
 
 The `khatma` migration owns Khatma lifecycle and membership. Members join with
 the Khatma invite code through `join_khatma_by_code`. The `quran` migration owns
 Juz availability and its free, claimed, and completed transitions through the
-`claim_quran_juz`, `release_quran_juz`, and `complete_quran_juz` functions. The
-dashboard composes reads from the Khatma and Quran feature APIs. Keep future Zikr
-tables and rules in a separate Zikr migration and feature module.
+`claim_quran_juz`, `release_quran_juz`, and `complete_quran_juz` functions.
+The `get_khatma_juz_details` function returns Juz status and claimant names to
+Khatma members. The dashboard composes reads from the Khatma and Quran feature
+APIs. Keep future Zikr tables and rules in a separate Zikr migration and
+feature module.
