@@ -91,5 +91,15 @@
     "khatmaDetailsLoadError": "تعذّر تحميل تقدم الختمة. حاول مجددًا لاحقًا.",
     "juzCompleted": "مكتمل",
     "juzClaimed": "محجوز",
-    "juzAvailable": "متاح"
+    "juzAvailable": "متاح",
+    "juzNumberLabel": "الجزء %{number}",
+    "juzClaimedByYou": "لقد حجزت هذا الجزء. أكمِل قراءته ثم حدّث حالته.",
+    "juzClaimedByName": "حجز %{name} هذا الجزء.",
+    "juzCompletedByYou": "أكملت هذا الجزء.",
+    "juzCompletedByName": "أكمل %{name} هذا الجزء.",
+    "unknownKhatmaMember": "مشارك في الختمة",
+    "claimJuz": "حجز الجزء",
+    "completeJuz": "تحديد كمكتمل",
+    "juzActionError": "تعذّر تحديث هذا الجزء. حدّث الصفحة وحاول مجددًا.",
+    "close": "إغلاق"
 }

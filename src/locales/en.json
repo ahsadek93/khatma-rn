@@ -91,5 +91,15 @@
     "khatmaDetailsLoadError": "We couldn't load this Khatma's progress. Try again later.",
     "juzCompleted": "Done",
     "juzClaimed": "Claimed",
-    "juzAvailable": "Open"
+    "juzAvailable": "Available",
+    "juzNumberLabel": "Juz %{number}",
+    "juzClaimedByYou": "You claimed this Juz. Mark it complete when you finish reading.",
+    "juzClaimedByName": "%{name} claimed this Juz.",
+    "juzCompletedByYou": "You completed this Juz.",
+    "juzCompletedByName": "%{name} completed this Juz.",
+    "unknownKhatmaMember": "A Khatma member",
+    "claimJuz": "Claim Juz",
+    "completeJuz": "Mark as complete",
+    "juzActionError": "We couldn't update this Juz. Refresh and try again.",
+    "close": "Close"
 }

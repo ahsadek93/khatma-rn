@@ -10,7 +10,7 @@ export type UserProfile = { displayName: string; email: string };
 export type KhatmaSummary = { id: string; name: string; memberCount: number };
 export type CompletedKhatma = { id: string; name: string; completedAt: string };
 export type KhatmaMember = { userId: string; role: "owner" | "member"; joinedAt: string };
-export type QuranJuz = { juzNumber: number; status: "free" | "claimed" | "completed"; claimedBy: string | null };
+export type QuranJuz = { juzNumber: number; status: "free" | "claimed" | "completed"; claimedBy: string | null; claimedByName: string | null };
 export type KhatmaQuranProgress = { completedJuz: number; selectedJuz: number[] };
 
 export interface AuthBackend {

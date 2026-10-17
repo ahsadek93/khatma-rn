@@ -168,12 +168,16 @@ export function createSupabaseBackend(client: SupabaseClient): AppBackend {
     quran: {
       async getKhatmaJuz(khatmaId) {
         try {
-          const { data, error } = await client.from("quran_khatma_juz").select("juz_number, status, claimed_by").eq("khatma_id", khatmaId).order("juz_number");
+          let { data, error } = await client.rpc("get_khatma_juz_details", { target_khatma_id: khatmaId });
+          if (error?.code === "PGRST202" || error?.code === "42883") {
+            ({ data, error } = await client.from("quran_khatma_juz").select("juz_number, status, claimed_by").eq("khatma_id", khatmaId).order("juz_number"));
+          }
           if (error) return failed(error);
           const juz: QuranJuz[] = (data ?? []).map((item) => ({
             juzNumber: item.juz_number,
             status: item.status as QuranJuz["status"],
             claimedBy: item.claimed_by,
+            claimedByName: item.claimed_by_name ?? null,
           }));
           return backendSuccess(juz);
         } catch (error) {

@@ -1,14 +1,25 @@
 import { AppText } from "@/components/AppText";
+import { getCurrentUser } from "@/features/auth/api";
 import { getKhatmaMembers } from "@/features/khatma/api";
-import { getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
+import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
 export default function KhatmaDetails() {
   useSettings();
+  const reduceMotion = useReducedMotion();
   const { id, name, status, completedAt } = useLocalSearchParams<{
     id: string;
     name: string;
@@ -19,6 +30,14 @@ export default function KhatmaDetails() {
   const [memberCount, setMemberCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [selectedJuz, setSelectedJuz] = useState<QuranJuz | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [actionError, setActionError] = useState(false);
+  const sheetY = useSharedValue(0);
+  const backdropOpacity = useSharedValue(0);
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.value }] }));
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
   const completedCount = juz.filter((item) => item.status === "completed").length;
   const isCompleted = status === "completed";
 
@@ -26,12 +45,13 @@ export default function KhatmaDetails() {
     let current = true;
     setIsLoading(true);
     setHasError(false);
-    void Promise.all([getKhatmaJuz(id), getKhatmaMembers(id)]).then(([juzResult, membersResult]) => {
+    void Promise.all([getKhatmaJuz(id), getKhatmaMembers(id), getCurrentUser()]).then(([juzResult, membersResult, userResult]) => {
       if (!current) return;
       if (juzResult.error || membersResult.error) setHasError(true);
       else {
         setJuz(juzResult.data);
         setMemberCount(membersResult.data.length);
+        setCurrentUserId(userResult.error ? null : userResult.data?.id ?? null);
       }
       setIsLoading(false);
     }).catch(() => {
@@ -41,6 +61,50 @@ export default function KhatmaDetails() {
     });
     return () => { current = false; };
   }, [id]));
+
+  const handleJuzAction = async (action: "claim" | "complete") => {
+    if (!selectedJuz) return;
+    setIsSaving(true);
+    setActionError(false);
+    const result = action === "claim"
+      ? await claimJuz(id, selectedJuz.juzNumber)
+      : await completeJuz(id, selectedJuz.juzNumber);
+    if (result.error) {
+      setActionError(true);
+      setIsSaving(false);
+      return;
+    }
+    setJuz((items) => items.map((item) => item.juzNumber === selectedJuz.juzNumber
+      ? { ...item, status: action === "claim" ? "claimed" : "completed", claimedBy: currentUserId }
+      : item));
+    closeSheet();
+    setIsSaving(false);
+    const refreshed = await getKhatmaJuz(id);
+    if (!refreshed.error) setJuz(refreshed.data);
+  };
+
+  const openSheet = (item: QuranJuz) => {
+    sheetY.value = reduceMotion ? 0 : 420;
+    backdropOpacity.value = 0;
+    setSelectedJuz(item);
+    setActionError(false);
+    if (reduceMotion) return;
+    requestAnimationFrame(() => {
+      sheetY.value = withSpring(0, { damping: 26, stiffness: 240, mass: 0.85 });
+      backdropOpacity.value = withTiming(0.52, { duration: 220 });
+    });
+  };
+
+  const closeSheet = () => {
+    if (reduceMotion) {
+      setSelectedJuz(null);
+      return;
+    }
+    sheetY.value = withTiming(420, { duration: 220, easing: Easing.in(Easing.cubic) }, (finished) => {
+      if (finished) runOnJS(setSelectedJuz)(null);
+    });
+    backdropOpacity.value = withTiming(0, { duration: 180 });
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -70,25 +134,56 @@ export default function KhatmaDetails() {
         <View className="mt-7">
           <AppText className="text-xl font-bold text-foreground">{i18n.t("khatmaJuzTitle")}</AppText>
           <AppText className="mt-1 text-sm leading-6 text-secondary-foreground">{i18n.t(isCompleted ? "khatmaJuzCompletedHint" : "khatmaJuzActiveHint")}</AppText>
+          <View className="mt-3 flex-row flex-wrap gap-x-4 gap-y-2">
+            {[["bg-white", "juzAvailable"], ["bg-green-600", "juzCompleted"], ["bg-yellow-400", "juzClaimed"]].map(([color, label]) => (
+              <View key={label} className="flex-row items-center gap-2">
+                <View className={`h-3 w-3 rounded-sm ${color}`} />
+                <AppText className="text-xs text-secondary-foreground">{i18n.t(label)}</AppText>
+              </View>
+            ))}
+          </View>
           {isLoading ? <AppText className="mt-4 text-sm text-secondary-foreground">{i18n.t("loading")}</AppText> : hasError ? (
             <View className="mt-4 rounded-2xl border border-subtle-border bg-surface p-4"><AppText className="text-sm text-secondary-foreground">{i18n.t("khatmaDetailsLoadError")}</AppText></View>
           ) : (
-            <View className="mt-4 flex-row flex-wrap gap-2">
+            <View className="mt-4 flex-row flex-wrap justify-between gap-y-2">
               {juz.map((item) => {
                 const stateLabel = item.status === "completed" ? "juzCompleted" : item.status === "claimed" ? "juzClaimed" : "juzAvailable";
-                const style = item.status === "completed" ? "border-primary bg-primary" : item.status === "claimed" ? "border-primary/40 bg-primary/10" : "border-subtle-border bg-surface";
-                const textStyle = item.status === "completed" ? "text-white" : "text-foreground";
+                const style = item.status === "completed" ? "border-green-600 bg-green-600" : item.status === "claimed" ? "border-yellow-400 bg-yellow-400" : "border-gray-300 bg-white";
+                const textStyle = item.status === "completed" ? "text-white" : "text-gray-900";
                 return (
-                  <View key={item.juzNumber} className={`w-[18%] items-center rounded-2xl border px-1 py-3 ${style}`}>
-                    <AppText className={`text-base font-bold ${textStyle}`}>{item.juzNumber}</AppText>
-                    <AppText className={`mt-1 text-[10px] ${textStyle}`}>{i18n.t(stateLabel)}</AppText>
-                  </View>
+                  <Pressable key={item.juzNumber} onPress={() => openSheet(item)} accessibilityRole="button" accessibilityLabel={`${i18n.t("juzNumberLabel", { number: item.juzNumber })}, ${i18n.t(stateLabel)}`} className={`w-[15%] aspect-square items-center justify-center rounded-md border ${style}`}>
+                    <AppText className={`h-full w-full text-center text-xs font-bold ${textStyle}`} style={{ textAlignVertical: "center", includeFontPadding: false }}>{item.juzNumber}</AppText>
+                  </Pressable>
                 );
               })}
             </View>
           )}
         </View>
       </ScrollView>
+      <Modal visible={selectedJuz !== null} transparent presentationStyle="overFullScreen" animationType="none" onRequestClose={() => !isSaving && closeSheet()}>
+        <View className="flex-1 justify-end">
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFillObject, backdropStyle]} className="bg-black" />
+          <Pressable className="absolute inset-0" accessibilityRole="button" accessibilityLabel={i18n.t("close")} onPress={() => !isSaving && closeSheet()} />
+          <Animated.View style={sheetStyle}>
+          <View className="rounded-t-3xl border-t border-subtle-border bg-background px-5 pb-8 pt-5">
+            {selectedJuz ? <>
+              <AppText className="text-xl font-bold text-foreground">{i18n.t("juzNumberLabel", { number: selectedJuz.juzNumber })}</AppText>
+              <AppText className="mt-2 text-sm text-secondary-foreground">{selectedJuz.status === "free"
+                ? i18n.t("juzAvailable")
+                : selectedJuz.status === "claimed" && selectedJuz.claimedBy === currentUserId
+                  ? i18n.t("juzClaimedByYou")
+                  : i18n.t(selectedJuz.status === "completed"
+                    ? selectedJuz.claimedBy === currentUserId ? "juzCompletedByYou" : "juzCompletedByName"
+                    : "juzClaimedByName", { name: selectedJuz.claimedByName ?? i18n.t("unknownKhatmaMember") })}</AppText>
+              {actionError ? <AppText accessibilityRole="alert" className="mt-3 text-sm text-red-500">{i18n.t("juzActionError")}</AppText> : null}
+              {!isCompleted && selectedJuz.status === "free" ? <Pressable disabled={isSaving} onPress={() => void handleJuzAction("claim")} accessibilityRole="button" className="mt-5 items-center rounded-xl bg-primary px-4 py-3"><AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "claimJuz")}</AppText></Pressable> : null}
+              {!isCompleted && selectedJuz.status === "claimed" && selectedJuz.claimedBy === currentUserId ? <Pressable disabled={isSaving} onPress={() => void handleJuzAction("complete")} accessibilityRole="button" className="mt-5 items-center rounded-xl bg-primary px-4 py-3"><AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "completeJuz")}</AppText></Pressable> : null}
+              <Pressable disabled={isSaving} onPress={closeSheet} accessibilityRole="button" className="mt-3 items-center rounded-xl bg-surface px-4 py-3"><AppText className="font-bold text-foreground">{i18n.t("close")}</AppText></Pressable>
+            </> : null}
+          </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 }
