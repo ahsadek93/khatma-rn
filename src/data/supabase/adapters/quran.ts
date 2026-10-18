@@ -13,7 +13,12 @@ export function createQuranAdapter(client: SupabaseClient): QuranBackend {
           ({ data, error } = await client.from("quran_khatma_juz").select("juz_number, status, claimed_by").eq("khatma_id", khatmaId).order("juz_number"));
         }
         if (error) return failed(error);
-        const juz: QuranJuz[] = (data ?? []).map((item) => ({
+        const juz: QuranJuz[] = (data ?? []).map((item: {
+          juz_number: number;
+          status: string;
+          claimed_by: string | null;
+          claimed_by_name?: string | null;
+        }) => ({
           juzNumber: item.juz_number,
           status: item.status as QuranJuz["status"],
           claimedBy: item.claimed_by,
