@@ -1,12 +1,12 @@
 import { AppText } from "@/components/AppText";
 import { getCurrentUser } from "@/features/auth/api";
-import { getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
+import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Modal, Pressable, ScrollView, Share, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   runOnJS,
@@ -28,6 +28,9 @@ export default function KhatmaDetails() {
   }>();
   const [juz, setJuz] = useState<QuranJuz[]>([]);
   const [members, setMembers] = useState<KhatmaMember[]>([]);
+  const [joinCode, setJoinCode] = useState<string | null>(null);
+  const [joinCodeError, setJoinCodeError] = useState(false);
+  const [shareError, setShareError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -46,13 +49,22 @@ export default function KhatmaDetails() {
     let current = true;
     setIsLoading(true);
     setHasError(false);
-    void Promise.all([getKhatmaJuz(id), getKhatmaMembers(id), getCurrentUser()]).then(([juzResult, membersResult, userResult]) => {
+    void Promise.all([
+      getKhatmaJuz(id),
+      getKhatmaMembers(id),
+      getCurrentUser(),
+      status === "active" ? getKhatmaJoinCode(id) : Promise.resolve(null),
+    ]).then(([juzResult, membersResult, userResult, joinCodeResult]) => {
       if (!current) return;
       if (juzResult.error || membersResult.error) setHasError(true);
       else {
         setJuz(juzResult.data);
         setMembers(membersResult.data);
         setCurrentUserId(userResult.error ? null : userResult.data?.id ?? null);
+      }
+      if (status === "active") {
+        if (joinCodeResult?.error || !joinCodeResult?.data) setJoinCodeError(true);
+        else setJoinCode(joinCodeResult.data);
       }
       setIsLoading(false);
     }).catch(() => {
@@ -61,7 +73,7 @@ export default function KhatmaDetails() {
       setIsLoading(false);
     });
     return () => { current = false; };
-  }, [id]));
+  }, [id, status]));
 
   const handleJuzAction = async (action: "claim" | "complete") => {
     if (!selectedJuz) return;
@@ -82,6 +94,13 @@ export default function KhatmaDetails() {
     setIsSaving(false);
     const refreshed = await getKhatmaJuz(id);
     if (!refreshed.error) setJuz(refreshed.data);
+  };
+
+  const handleShare = () => {
+    if (!joinCode) return;
+    setShareError(false);
+    void Share.share({ message: i18n.t("shareKhatmaMessage", { name, code: joinCode }) ?? "" })
+      .catch(() => setShareError(true));
   };
 
   const openSheet = (item: QuranJuz) => {
@@ -149,6 +168,14 @@ export default function KhatmaDetails() {
           <View className="mt-2 h-2 overflow-hidden rounded-full bg-track">
             <View className="h-full rounded-full bg-primary" style={{ width: `${(completedCount / 30) * 100}%` }} />
           </View>
+          {!isCompleted ? joinCode ? (
+            <Pressable onPress={handleShare} accessibilityRole="button" className="mt-5 items-center rounded-2xl bg-primary px-4 py-3">
+              <AppText className="font-bold text-background">{i18n.t("shareKhatma")}</AppText>
+            </Pressable>
+          ) : joinCodeError ? (
+            <AppText className="mt-4 text-sm text-secondary-foreground">{i18n.t("khatmaCodeLoadError")}</AppText>
+          ) : null : null}
+          {shareError ? <AppText accessibilityRole="alert" className="mt-3 text-sm text-red-500">{i18n.t("shareKhatmaError")}</AppText> : null}
         </View>
 
         <View className="mt-7">

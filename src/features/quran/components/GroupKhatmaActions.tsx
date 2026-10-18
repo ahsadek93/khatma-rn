@@ -11,9 +11,9 @@ export function GroupKhatmaActions() {
         <Pressable accessibilityRole="button" onPress={() => router.push("/(app)/create-khatma")} className="flex-1 items-center rounded-2xl bg-primary px-3 py-4">
           <AppText className="text-base font-bold text-background">{i18n.t("createGroupKhatma")}</AppText>
         </Pressable>
-        <View className="flex-1 items-center rounded-2xl border border-primary/50 px-3 py-4">
+        <Pressable accessibilityRole="button" onPress={() => router.push("/(app)/join-khatma")} className="flex-1 items-center rounded-2xl border border-primary/50 px-3 py-4">
           <AppText className="text-base font-bold text-primary">{i18n.t("joinGroupKhatma")}</AppText>
-        </View>
+        </Pressable>
       </View>
     </View>
   );
