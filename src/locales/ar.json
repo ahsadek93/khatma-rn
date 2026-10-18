@@ -103,6 +103,8 @@
     "khatmaDetailsLoadError": "تعذّر تحميل تقدم الختمة. حاول مجددًا لاحقًا.",
     "juzCompleted": "مكتمل",
     "juzClaimed": "محجوز",
+    "juzClaimedByYouLegend": "حجزته أنت",
+    "juzClaimedByOtherLegend": "حجزه شخص آخر",
     "juzAvailable": "متاح",
     "juzNumberLabel": "الجزء %{number}",
     "juzClaimedByYou": "لقد حجزت هذا الجزء. أكمِل قراءته ثم حدّث حالته.",

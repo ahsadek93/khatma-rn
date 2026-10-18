@@ -103,6 +103,8 @@
     "khatmaDetailsLoadError": "We couldn't load this Khatma's progress. Try again later.",
     "juzCompleted": "Done",
     "juzClaimed": "Claimed",
+    "juzClaimedByYouLegend": "Claimed by you",
+    "juzClaimedByOtherLegend": "Claimed by someone else",
     "juzAvailable": "Available",
     "juzNumberLabel": "Juz %{number}",
     "juzClaimedByYou": "You claimed this Juz. Mark it complete when you finish reading.",

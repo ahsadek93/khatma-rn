@@ -206,7 +206,7 @@ export default function KhatmaDetails() {
           <AppText className="text-xl font-bold text-foreground">{i18n.t("khatmaJuzTitle")}</AppText>
           <AppText className="mt-1 text-sm leading-6 text-secondary-foreground">{i18n.t(isCompleted ? "khatmaJuzCompletedHint" : "khatmaJuzActiveHint")}</AppText>
           <View className="mt-3 flex-row flex-wrap gap-x-4 gap-y-2">
-            {[["bg-white", "juzAvailable"], ["bg-green-600", "juzCompleted"], ["bg-yellow-400", "juzClaimed"]].map(([color, label]) => (
+            {[["bg-white", "juzAvailable"], ["bg-green-600", "juzCompleted"], ["bg-yellow-400", "juzClaimedByYouLegend"], ["bg-gray-500", "juzClaimedByOtherLegend"]].map(([color, label]) => (
               <View key={label} className="flex-row items-center gap-2">
                 <View className={`h-3 w-3 rounded-sm ${color}`} />
                 <AppText className="text-xs text-secondary-foreground">{i18n.t(label)}</AppText>
