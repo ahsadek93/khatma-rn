@@ -26,5 +26,12 @@ export function mapSupabaseError(error: unknown): BackendError {
 }
 
 export function failed<T = never>(error: unknown): BackendResult<T> {
+  if (
+    typeof error === "object" && error !== null &&
+    "code" in error && "message" in error && typeof error.message === "string" &&
+    ["unauthenticated", "conflict", "unavailable", "unexpected"].includes(String(error.code))
+  ) {
+    return backendFailure(error as BackendError);
+  }
   return backendFailure(mapSupabaseError(error));
 }
