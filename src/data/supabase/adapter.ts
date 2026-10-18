@@ -2,7 +2,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   AppBackend,
   AuthUser,
-  BackendError,
   BackendResult,
   CompletedKhatma,
   KhatmaMember,
@@ -10,32 +9,9 @@ import type {
   QuranJuz,
   UserProfile,
 } from "../contracts";
-import { backendFailure, backendSuccess, unexpectedBackendError } from "../results";
-
-type ProviderError = { code?: string; status?: number; message?: string };
-
-function mapError(error: unknown): BackendError {
-  const providerError = error as ProviderError;
-  const message = providerError?.message ?? String(error);
-
-  if (providerError?.code === "23505" || providerError?.code === "23503") {
-    return { code: "conflict", message };
-  }
-  if (providerError?.status === 401 || /authsessionmissing|not authenticated|no signed-in user/i.test(message)) {
-    return { code: "unauthenticated", message };
-  }
-  if (providerError?.status && providerError.status >= 500) {
-    return { code: "unavailable", message };
-  }
-  if (/network|fetch failed|timeout/i.test(message)) {
-    return { code: "unavailable", message };
-  }
-  return unexpectedBackendError(error);
-}
-
-function failed<T = never>(error: unknown): BackendResult<T> {
-  return backendFailure(mapError(error));
-}
+import { backendFailure, backendSuccess } from "../results";
+import { failed } from "./shared/errors";
+import { getMyKhatmaRows } from "./shared/khatma-queries";
 
 function currentUser(user: { id: string; email?: string } | null): AuthUser | null {
   return user ? { id: user.id, email: user.email ?? null } : null;
@@ -205,16 +181,6 @@ export function createSupabaseBackend(client: SupabaseClient): AppBackend {
       completeJuz: (khatmaId, juzNumber) => applyJuzAction(client, "complete", khatmaId, juzNumber),
     },
   };
-}
-
-async function getMyKhatmaRows(client: SupabaseClient, status: "active" | "completed") {
-  const { data: { user }, error: userError } = await client.auth.getUser();
-  if (userError) return { rows: [], error: userError };
-  if (!user) return { rows: [], error: new Error("No signed-in user") };
-  const { data, error } = await client.from("khatma_members").select("khatmas!inner(id, name, status, completed_at)").eq("user_id", user.id).eq("khatmas.status", status);
-  if (error) return { rows: [], error };
-  const rows = (data ?? []).map(({ khatmas }) => Array.isArray(khatmas) ? khatmas[0] : khatmas).filter(Boolean);
-  return { rows, error: null };
 }
 
 async function getMyKhatma(client: SupabaseClient, status: "active" | "completed"): Promise<BackendResult<KhatmaSummary | null>> {
