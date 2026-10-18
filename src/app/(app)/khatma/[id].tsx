@@ -1,6 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { getCurrentUser } from "@/features/auth/api";
-import { getKhatmaMembers } from "@/features/khatma/api";
+import { getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
@@ -27,11 +27,12 @@ export default function KhatmaDetails() {
     completedAt?: string;
   }>();
   const [juz, setJuz] = useState<QuranJuz[]>([]);
-  const [memberCount, setMemberCount] = useState(0);
+  const [members, setMembers] = useState<KhatmaMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedJuz, setSelectedJuz] = useState<QuranJuz | null>(null);
+  const [showMembers, setShowMembers] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [actionError, setActionError] = useState(false);
   const sheetY = useSharedValue(0);
@@ -50,7 +51,7 @@ export default function KhatmaDetails() {
       if (juzResult.error || membersResult.error) setHasError(true);
       else {
         setJuz(juzResult.data);
-        setMemberCount(membersResult.data.length);
+        setMembers(membersResult.data);
         setCurrentUserId(userResult.error ? null : userResult.data?.id ?? null);
       }
       setIsLoading(false);
@@ -98,12 +99,29 @@ export default function KhatmaDetails() {
   const closeSheet = () => {
     if (reduceMotion) {
       setSelectedJuz(null);
+      setShowMembers(false);
       return;
     }
     sheetY.value = withTiming(420, { duration: 220, easing: Easing.in(Easing.cubic) }, (finished) => {
-      if (finished) runOnJS(setSelectedJuz)(null);
+      if (finished) runOnJS(finishClosingSheet)();
     });
     backdropOpacity.value = withTiming(0, { duration: 180 });
+  };
+
+  const finishClosingSheet = () => {
+    setSelectedJuz(null);
+    setShowMembers(false);
+  };
+
+  const openMembersSheet = () => {
+    sheetY.value = reduceMotion ? 0 : 420;
+    backdropOpacity.value = 0;
+    setShowMembers(true);
+    if (reduceMotion) return;
+    requestAnimationFrame(() => {
+      sheetY.value = withSpring(0, { damping: 26, stiffness: 240, mass: 0.85 });
+      backdropOpacity.value = withTiming(0.52, { duration: 220 });
+    });
   };
 
   return (
@@ -120,7 +138,9 @@ export default function KhatmaDetails() {
             </View>
           </View>
           <AppText className="mt-4 text-2xl font-bold text-foreground">{name}</AppText>
-          <AppText className="mt-2 text-sm text-secondary-foreground">{i18n.t("activeGroupMembers", { count: memberCount })}</AppText>
+          <Pressable onPress={openMembersSheet} accessibilityRole="button" accessibilityLabel={i18n.t("activeGroupMembers", { count: members.length })} className="mt-2 self-start">
+            <AppText className="text-sm text-secondary-foreground underline">{i18n.t("activeGroupMembers", { count: members.length })}</AppText>
+          </Pressable>
           {isCompleted && completedAt ? <AppText className="mt-1 text-sm text-secondary-foreground">{i18n.t("khatmaCompletedAt", { date: new Date(completedAt).toLocaleDateString(i18n.locale) })}</AppText> : null}
           <View className="mt-6 flex-row items-end justify-between">
             <AppText className="text-sm text-secondary-foreground">{i18n.t("completedJuz")}</AppText>
@@ -160,13 +180,30 @@ export default function KhatmaDetails() {
           )}
         </View>
       </ScrollView>
-      <Modal visible={selectedJuz !== null} transparent presentationStyle="overFullScreen" animationType="none" onRequestClose={() => !isSaving && closeSheet()}>
+      <Modal visible={selectedJuz !== null || showMembers} transparent presentationStyle="overFullScreen" animationType="none" onRequestClose={() => !isSaving && closeSheet()}>
         <View className="flex-1 justify-end">
           <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFillObject, backdropStyle]} className="bg-black" />
           <Pressable className="absolute inset-0" accessibilityRole="button" accessibilityLabel={i18n.t("close")} onPress={() => !isSaving && closeSheet()} />
           <Animated.View style={sheetStyle}>
-          <View className="rounded-t-3xl border-t border-subtle-border bg-background px-5 pb-8 pt-5">
-            {selectedJuz ? <>
+          <View style={showMembers ? { height: "80%" } : undefined} className="max-h-[90%] rounded-t-3xl border-t border-subtle-border bg-background px-5 pb-8 pt-5">
+            {showMembers ? <>
+              <AppText className="mb-4 text-xl font-bold text-foreground">{i18n.t("khatmaParticipants")}</AppText>
+              <AppText className="-mt-2 mb-3 text-sm text-secondary-foreground">{i18n.t("activeGroupMembers", { count: members.length })}</AppText>
+              <ScrollView className="flex-1 rounded-2xl bg-surface px-2 py-2" showsVerticalScrollIndicator persistentScrollbar>
+                <View className="gap-2">
+                  {members.map((member) => (
+                    <View key={member.userId} className="flex-row items-center rounded-xl bg-surface px-3 py-3">
+                      <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-primary/15">
+                        <AppText className="font-bold text-primary">{(member.displayName || i18n.t("unknownKhatmaMember")).slice(0, 1)}</AppText>
+                      </View>
+                      <AppText className="flex-1 text-sm font-medium text-foreground">{member.displayName || i18n.t("unknownKhatmaMember")}</AppText>
+                      {member.role === "owner" ? <AppText className="text-xs text-secondary-foreground">{i18n.t("khatmaOwner")}</AppText> : null}
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+              <Pressable onPress={closeSheet} accessibilityRole="button" className="mt-4 items-center rounded-xl bg-surface px-4 py-3"><AppText className="font-bold text-foreground">{i18n.t("close")}</AppText></Pressable>
+            </> : selectedJuz ? <>
               <AppText className="text-xl font-bold text-foreground">{i18n.t("juzNumberLabel", { number: selectedJuz.juzNumber })}</AppText>
               <AppText className="mt-2 text-sm text-secondary-foreground">{selectedJuz.status === "free"
                 ? i18n.t("juzAvailable")

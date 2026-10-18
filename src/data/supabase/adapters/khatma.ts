@@ -27,10 +27,16 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
     },
     async getKhatmaMembers(khatmaId) {
       try {
-        const { data, error } = await client.from("khatma_members").select("user_id, role, joined_at").eq("khatma_id", khatmaId).order("joined_at");
-        if (error) return failed(error);
-        const members: KhatmaMember[] = (data ?? []).map((member) => ({
+        const [membershipResult, detailsResult] = await Promise.all([
+          client.from("khatma_members").select("user_id, role, joined_at").eq("khatma_id", khatmaId).order("joined_at"),
+          client.rpc("get_khatma_member_details", { target_khatma_id: khatmaId }),
+        ]);
+        if (membershipResult.error) return failed(membershipResult.error);
+        if (detailsResult.error) return failed(detailsResult.error);
+        const names = new Map((detailsResult.data ?? []).map((member) => [member.user_id, member.display_name || null]));
+        const members: KhatmaMember[] = (membershipResult.data ?? []).map((member) => ({
           userId: member.user_id,
+          displayName: names.get(member.user_id) ?? null,
           role: member.role as KhatmaMember["role"],
           joinedAt: member.joined_at,
         }));

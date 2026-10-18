@@ -85,6 +85,8 @@
     "createKhatmaButton": "Create Khatma",
     "createKhatmaError": "We couldn't create your Khatma. Try again.",
     "khatmaDetails": "Khatma details",
+    "khatmaParticipants": "Participants",
+    "khatmaOwner": "Organizer",
     "khatmaJuzTitle": "Quran progress",
     "khatmaJuzActiveHint": "See which Juz are complete, claimed, or available.",
     "khatmaJuzCompletedHint": "All Juz completed in this Khatma.",

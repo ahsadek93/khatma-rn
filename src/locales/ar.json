@@ -85,6 +85,8 @@
     "createKhatmaButton": "إنشاء الختمة",
     "createKhatmaError": "تعذّر إنشاء الختمة. حاول مجددًا.",
     "khatmaDetails": "تفاصيل الختمة",
+    "khatmaParticipants": "المشاركون",
+    "khatmaOwner": "المنظّم",
     "khatmaJuzTitle": "تقدم القرآن",
     "khatmaJuzActiveHint": "تعرّف على الأجزاء المكتملة والمحجوزة والمتاحة.",
     "khatmaJuzCompletedHint": "اكتملت جميع أجزاء هذه الختمة.",
