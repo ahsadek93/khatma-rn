@@ -52,7 +52,6 @@ export default function AppLayout() {
       />
       <Tabs.Screen name="create-khatma" options={{ href: null }} />
       <Tabs.Screen name="join-khatma" options={{ href: null }} />
-      <Tabs.Screen name="khatma/[id]" options={{ href: null }} />
       <Tabs.Screen
         name="zikr"
         options={{

@@ -39,11 +39,13 @@ export default function KhatmaDetails() {
   const [showMembers, setShowMembers] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [actionError, setActionError] = useState(false);
+  const [showMyJuzOnly, setShowMyJuzOnly] = useState(false);
   const sheetY = useSharedValue(0);
   const backdropOpacity = useSharedValue(0);
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.value }] }));
   const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
   const completedCount = juz.filter((item) => item.status === "completed").length;
+  const visibleJuz = showMyJuzOnly ? juz.filter((item) => item.status !== "free" && item.claimedBy === currentUserId) : juz;
   const isCompleted = status === "completed";
 
   useFocusEffect(useCallback(() => {
@@ -206,23 +208,40 @@ export default function KhatmaDetails() {
           <AppText className="text-xl font-bold text-foreground">{i18n.t("khatmaJuzTitle")}</AppText>
           <AppText className="mt-1 text-sm leading-6 text-secondary-foreground">{i18n.t(isCompleted ? "khatmaJuzCompletedHint" : "khatmaJuzActiveHint")}</AppText>
           <View className="mt-3 flex-row flex-wrap gap-x-4 gap-y-2">
-            {[["bg-white", "juzAvailable"], ["bg-green-600", "juzCompleted"], ["bg-yellow-400", "juzClaimedByYouLegend"], ["bg-gray-500", "juzClaimedByOtherLegend"]].map(([color, label]) => (
+            {[["bg-white", "juzAvailable"], ["bg-green-900", "juzCompleted"], ["bg-yellow-600", "juzClaimedByYouLegend"], ["bg-gray-500", "juzClaimedByOtherLegend"]].map(([color, label]) => (
               <View key={label} className="flex-row items-center gap-2">
                 <View className={`h-3 w-3 rounded-sm ${color}`} />
                 <AppText className="text-xs text-secondary-foreground">{i18n.t(label)}</AppText>
               </View>
             ))}
           </View>
+          <View className="mt-4 flex-row gap-2">
+            {[false, true].map((myOnly) => (
+              <Pressable
+                key={String(myOnly)}
+                onPress={() => setShowMyJuzOnly(myOnly)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: showMyJuzOnly === myOnly }}
+                className={`rounded-full px-4 py-2 ${showMyJuzOnly === myOnly ? "bg-primary" : "bg-surface"}`}
+              >
+                <AppText className={`text-sm font-bold ${showMyJuzOnly === myOnly ? "text-background" : "text-secondary-foreground"}`}>
+                  {i18n.t(myOnly ? "myJuzFilter" : "allJuzFilter")}
+                </AppText>
+              </Pressable>
+            ))}
+          </View>
           {isLoading ? <AppText className="mt-4 text-sm text-secondary-foreground">{i18n.t("loading")}</AppText> : hasError ? (
             <View className="mt-4 rounded-2xl border border-subtle-border bg-surface p-4"><AppText className="text-sm text-secondary-foreground">{i18n.t("khatmaDetailsLoadError")}</AppText></View>
+          ) : showMyJuzOnly && visibleJuz.length === 0 ? (
+            <AppText className="mt-4 text-sm text-secondary-foreground">{i18n.t("noMyJuzFilterResults")}</AppText>
           ) : (
-            <View className="mt-4 flex-row flex-wrap justify-between gap-y-2">
-              {juz.map((item) => {
+            <View className="mt-4 flex-row flex-wrap justify-start gap-x-2 gap-y-2">
+              {visibleJuz.map((item) => {
                 const stateLabel = item.status === "completed" ? "juzCompleted" : item.status === "claimed" ? "juzClaimed" : "juzAvailable";
-                const style = item.status === "completed" ? "border-green-600 bg-green-600" : item.status === "claimed" ? item.claimedBy === currentUserId ? "border-yellow-400 bg-yellow-400" : "border-gray-500 bg-gray-500" : "border-gray-300 bg-white";
+                const style = item.status === "completed" ? "border-green-900 bg-green-900" : item.status === "claimed" ? item.claimedBy === currentUserId ? "border-yellow-600 bg-yellow-600" : "border-gray-500 bg-gray-500" : "border-gray-300 bg-white";
                 const textStyle = item.status === "completed" ? "text-white" : "text-gray-900";
                 return (
-                  <Pressable key={item.juzNumber} onPress={() => openSheet(item)} accessibilityRole="button" accessibilityLabel={`${i18n.t("juzNumberLabel", { number: item.juzNumber })}, ${i18n.t(stateLabel)}`} className={`w-[15%] aspect-square items-center justify-center rounded-md border ${style}`}>
+                  <Pressable key={item.juzNumber} onPress={() => openSheet(item)} accessibilityRole="button" accessibilityLabel={`${i18n.t("juzNumberLabel", { number: item.juzNumber })}, ${i18n.t(stateLabel)}`} className={`w-[14%] aspect-square items-center justify-center rounded-md border ${style}`}>
                     <AppText className={`h-full w-full text-center text-xs font-bold ${textStyle}`} style={{ textAlignVertical: "center", includeFontPadding: false }}>{item.juzNumber}</AppText>
                   </Pressable>
                 );

@@ -119,7 +119,7 @@ export function ActiveKhatmaSection() {
       ) : (
         <Pressable
           className="rounded-3xl border border-primary/30 bg-surface p-5"
-          onPress={() => router.push({ pathname: "/(app)/khatma/[id]", params: { id: khatma.id, name: khatma.name, status: "active" } })}
+          onPress={() => router.push({ pathname: "/(app)/home/khatma/[id]", params: { id: khatma.id, name: khatma.name, status: "active" } })}
           accessibilityRole="button"
           accessibilityLabel={`${khatma.name}, ${i18n.t("viewKhatma")}`}
         >

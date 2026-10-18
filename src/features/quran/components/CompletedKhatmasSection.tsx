@@ -2,7 +2,8 @@ import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { getMyCompletedKhatmas, type CompletedKhatma } from "@/features/khatma/api";
 import { SkeletonBlock } from "./SkeletonBlock";
 
@@ -11,8 +12,9 @@ export function CompletedKhatmasSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     let isCurrent = true;
+    setHasError(false);
     void getMyCompletedKhatmas().then(({ data, error }) => {
       if (!isCurrent) return;
       if (error || !data) setHasError(true);
@@ -24,7 +26,7 @@ export function CompletedKhatmasSection() {
       setIsLoading(false);
     });
     return () => { isCurrent = false; };
-  }, []);
+  }, []));
 
   return (
     <View className="mt-7">
@@ -56,7 +58,7 @@ export function CompletedKhatmasSection() {
           <Pressable
             key={id}
             className="mt-3 rounded-2xl border border-subtle-border bg-surface px-4 py-3"
-            onPress={() => router.push({ pathname: "/(app)/khatma/[id]", params: { id, name, status: "completed", completedAt } })}
+              onPress={() => router.push({ pathname: "/(app)/home/khatma/[id]", params: { id, name, status: "completed", completedAt } })}
             accessibilityRole="button"
             accessibilityLabel={`${name}, ${i18n.t("completedBadge")}`}
           >
