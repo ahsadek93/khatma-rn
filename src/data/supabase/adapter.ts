@@ -1,86 +1,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   AppBackend,
-  AuthUser,
   BackendResult,
   CompletedKhatma,
   KhatmaMember,
   KhatmaSummary,
   QuranJuz,
-  UserProfile,
 } from "../contracts";
 import { backendFailure, backendSuccess } from "../results";
+import { createAuthAdapter } from "./adapters/auth";
+import { createProfileAdapter } from "./adapters/profile";
 import { failed } from "./shared/errors";
 import { getMyKhatmaRows } from "./shared/khatma-queries";
 
-function currentUser(user: { id: string; email?: string } | null): AuthUser | null {
-  return user ? { id: user.id, email: user.email ?? null } : null;
-}
-
 export function createSupabaseBackend(client: SupabaseClient): AppBackend {
   return {
-    auth: {
-      async getCurrentUser() {
-        try {
-          const { data, error } = await client.auth.getSession();
-          return error ? failed(error) : backendSuccess(currentUser(data.session?.user ?? null));
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async sendSignInCode(email) {
-        try {
-          const { error } = await client.auth.signInWithOtp({ email });
-          return error ? failed(error) : backendSuccess(null);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async verifySignInCode(email, token) {
-        try {
-          const { data, error } = await client.auth.verifyOtp({ email, token, type: "email" });
-          if (error) return failed(error);
-          const user = currentUser(data.user);
-          return user ? backendSuccess(user) : failed(new Error("Verification returned no user"));
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async signOut() {
-        try {
-          const { error } = await client.auth.signOut();
-          return error ? failed(error) : backendSuccess(null);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-    },
-    profile: {
-      async getCurrentProfile() {
-        try {
-          const { data: { user }, error: userError } = await client.auth.getUser();
-          if (userError) return failed(userError);
-          if (!user) return backendFailure({ code: "unauthenticated", message: "No signed-in user" });
-          const { data, error } = await client.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
-          if (error) return failed(error);
-          const profile: UserProfile = { displayName: data?.display_name ?? "", email: user.email ?? "" };
-          return backendSuccess(profile);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async saveCurrentDisplayName(displayName) {
-        try {
-          const { data: { user }, error: userError } = await client.auth.getUser();
-          if (userError) return failed(userError);
-          if (!user) return backendFailure({ code: "unauthenticated", message: "No signed-in user" });
-          const { error } = await client.from("profiles").upsert({ id: user.id, display_name: displayName }, { onConflict: "id" });
-          return error ? failed(error) : backendSuccess(null);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-    },
+    auth: createAuthAdapter(client),
+    profile: createProfileAdapter(client),
     khatma: {
       async createKhatma(name) {
         try {
