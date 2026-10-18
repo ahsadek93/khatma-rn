@@ -1,143 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type {
-  AppBackend,
-  BackendResult,
-  CompletedKhatma,
-  KhatmaMember,
-  KhatmaSummary,
-  QuranJuz,
-} from "../contracts";
-import { backendFailure, backendSuccess } from "../results";
+import type { AppBackend } from "../contracts";
+import { createKhatmaAdapter } from "./adapters/khatma";
+import { createQuranAdapter } from "./adapters/quran";
 import { createAuthAdapter } from "./adapters/auth";
 import { createProfileAdapter } from "./adapters/profile";
-import { failed } from "./shared/errors";
-import { getMyKhatmaRows } from "./shared/khatma-queries";
 
 export function createSupabaseBackend(client: SupabaseClient): AppBackend {
   return {
     auth: createAuthAdapter(client),
     profile: createProfileAdapter(client),
-    khatma: {
-      async createKhatma(name) {
-        try {
-          const { data: { user }, error: userError } = await client.auth.getUser();
-          if (userError) return failed(userError);
-          if (!user) return backendFailure({ code: "unauthenticated", message: "No signed-in user" });
-          const { data, error } = await client.from("khatmas").insert({ name: name.trim(), created_by: user.id }).select("id, name").single();
-          return error ? failed(error) : backendSuccess({ id: data.id, name: data.name });
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async joinKhatmaByCode(code) {
-        try {
-          const { data, error } = await client.rpc("join_khatma_by_code", { requested_code: code });
-          return error ? failed(error) : backendSuccess(data);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async getKhatmaMembers(khatmaId) {
-        try {
-          const { data, error } = await client.from("khatma_members").select("user_id, role, joined_at").eq("khatma_id", khatmaId).order("joined_at");
-          if (error) return failed(error);
-          const members: KhatmaMember[] = (data ?? []).map((member) => ({
-            userId: member.user_id,
-            role: member.role as KhatmaMember["role"],
-            joinedAt: member.joined_at,
-          }));
-          return backendSuccess(members);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async getKhatmaJoinCode(khatmaId) {
-        try {
-          const { data, error } = await client.from("khatmas").select("join_code").eq("id", khatmaId).maybeSingle();
-          return error ? failed(error) : backendSuccess(data?.join_code ?? null);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async getMyActiveKhatma() {
-        return getMyKhatma(client, "active");
-      },
-      async getMyCompletedKhatmas() {
-        try {
-          const result = await getMyKhatmaRows(client, "completed");
-          if (result.error) return failed(result.error);
-          const khatmas: CompletedKhatma[] = result.rows.map((khatma) => ({
-            id: khatma.id,
-            name: khatma.name,
-            completedAt: khatma.completed_at ?? "",
-          }));
-          return backendSuccess(khatmas);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-    },
-    quran: {
-      async getKhatmaJuz(khatmaId) {
-        try {
-          let { data, error } = await client.rpc("get_khatma_juz_details", { target_khatma_id: khatmaId });
-          if (error?.code === "PGRST202" || error?.code === "42883") {
-            ({ data, error } = await client.from("quran_khatma_juz").select("juz_number, status, claimed_by").eq("khatma_id", khatmaId).order("juz_number"));
-          }
-          if (error) return failed(error);
-          const juz: QuranJuz[] = (data ?? []).map((item) => ({
-            juzNumber: item.juz_number,
-            status: item.status as QuranJuz["status"],
-            claimedBy: item.claimed_by,
-            claimedByName: item.claimed_by_name ?? null,
-          }));
-          return backendSuccess(juz);
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      async getKhatmaQuranProgress(khatmaId) {
-        try {
-          const { data: { user }, error: userError } = await client.auth.getUser();
-          if (userError) return failed(userError);
-          if (!user) return backendFailure({ code: "unauthenticated", message: "No signed-in user" });
-          const { data, error } = await client.from("quran_khatma_juz").select("juz_number, status, claimed_by").eq("khatma_id", khatmaId);
-          if (error) return failed(error);
-          const rows = data ?? [];
-          return backendSuccess({
-            completedJuz: rows.filter((item) => item.status === "completed").length,
-            selectedJuz: rows.filter((item) => item.status === "claimed" && item.claimed_by === user.id).map((item) => item.juz_number),
-          });
-        } catch (error) {
-          return failed(error);
-        }
-      },
-      claimJuz: (khatmaId, juzNumber) => applyJuzAction(client, "claim", khatmaId, juzNumber),
-      releaseJuz: (khatmaId, juzNumber) => applyJuzAction(client, "release", khatmaId, juzNumber),
-      completeJuz: (khatmaId, juzNumber) => applyJuzAction(client, "complete", khatmaId, juzNumber),
-    },
+    khatma: createKhatmaAdapter(client),
+    quran: createQuranAdapter(client),
   };
-}
-
-async function getMyKhatma(client: SupabaseClient, status: "active" | "completed"): Promise<BackendResult<KhatmaSummary | null>> {
-  try {
-    const { rows, error } = await getMyKhatmaRows(client, status);
-    if (error) return failed(error);
-    const active = rows[0];
-    if (!active) return backendSuccess(null);
-    const { count, error: countError } = await client.from("khatma_members").select("id", { count: "exact", head: true }).eq("khatma_id", active.id);
-    if (countError) return failed(countError);
-    return backendSuccess({ id: active.id, name: active.name, memberCount: count ?? 0 });
-  } catch (error) {
-    return failed(error);
-  }
-}
-
-async function applyJuzAction(client: SupabaseClient, action: "claim" | "release" | "complete", khatmaId: string, juzNumber: number): Promise<BackendResult<null>> {
-  try {
-    const { error } = await client.rpc(`${action}_quran_juz`, { target_khatma_id: khatmaId, target_juz_number: juzNumber });
-    return error ? failed(error) : backendSuccess(null);
-  } catch (error) {
-    return failed(error);
-  }
 }
