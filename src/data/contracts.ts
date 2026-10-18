@@ -12,6 +12,7 @@ export type CompletedKhatma = { id: string; name: string; completedAt: string };
 export type KhatmaMember = { userId: string; displayName: string | null; role: "owner" | "member"; joinedAt: string };
 export type QuranJuz = { juzNumber: number; status: "free" | "claimed" | "completed"; claimedBy: string | null; claimedByName: string | null };
 export type KhatmaQuranProgress = { completedJuz: number; selectedJuz: number[] };
+export type KhatmaRealtimeEvent = "connected" | "progressChanged" | "membersChanged";
 
 export interface AuthBackend {
   getCurrentUser(): Promise<BackendResult<AuthUser | null>>;
@@ -42,9 +43,14 @@ export interface QuranBackend {
   completeJuz(khatmaId: string, juzNumber: number): Promise<BackendResult<null>>;
 }
 
+export interface RealtimeBackend {
+  subscribeToKhatmaUpdates(khatmaId: string, listener: (event: KhatmaRealtimeEvent) => void): () => void;
+}
+
 export interface AppBackend {
   auth: AuthBackend;
   profile: ProfileBackend;
   khatma: KhatmaBackend;
   quran: QuranBackend;
+  realtime: RealtimeBackend;
 }

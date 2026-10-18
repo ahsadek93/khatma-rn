@@ -1,4 +1,5 @@
 import { AppText } from "@/components/AppText";
+import { subscribeToKhatmaUpdates } from "@/data";
 import { i18n } from "@/i18n";
 import { Pressable, View } from "react-native";
 import { useCallback, useState } from "react";
@@ -17,6 +18,7 @@ export function ActiveKhatmaSection() {
 
   const loadKhatma = useCallback(() => {
     let isCurrent = true;
+    let unsubscribe = () => {};
     setIsLoading(true);
     setHasError(false);
     setKhatma(null);
@@ -39,6 +41,22 @@ export function ActiveKhatmaSection() {
         setHasError(true);
       } else {
         setKhatma({ ...active, ...data });
+        const refreshProgress = () => {
+          void getKhatmaQuranProgress(active.id).then(({ data: progress, error: refreshError }) => {
+            if (!isCurrent) return;
+            if (refreshError || !progress) {
+              setHasError(true);
+              return;
+            }
+            setKhatma((current) => current?.id === active.id ? { ...current, ...progress } : current);
+            setHasError(false);
+          }).catch(() => {
+            if (isCurrent) setHasError(true);
+          });
+        };
+        unsubscribe = subscribeToKhatmaUpdates(active.id, (event) => {
+          if (event === "connected" || event === "progressChanged") refreshProgress();
+        });
       }
       setIsLoading(false);
     })().catch(() => {
@@ -46,7 +64,10 @@ export function ActiveKhatmaSection() {
       setHasError(true);
       setIsLoading(false);
     });
-    return () => { isCurrent = false; };
+    return () => {
+      isCurrent = false;
+      unsubscribe();
+    };
   }, []);
 
   useFocusEffect(loadKhatma);

@@ -1,4 +1,5 @@
 import { AppText } from "@/components/AppText";
+import { subscribeToKhatmaUpdates } from "@/data";
 import { getCurrentUser } from "@/features/auth/api";
 import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
@@ -72,7 +73,30 @@ export default function KhatmaDetails() {
       setHasError(true);
       setIsLoading(false);
     });
-    return () => { current = false; };
+
+    const refreshLiveDetails = () => {
+      void Promise.all([getKhatmaJuz(id), getKhatmaMembers(id)]).then(([juzResult, membersResult]) => {
+        if (!current) return;
+        if (juzResult.error || membersResult.error) {
+          setHasError(true);
+          return;
+        }
+        setJuz(juzResult.data);
+        setMembers(membersResult.data);
+        setHasError(false);
+      }).catch(() => {
+        if (current) setHasError(true);
+      });
+    };
+
+    const unsubscribe = subscribeToKhatmaUpdates(id, (event) => {
+      if (event !== "connected") refreshLiveDetails();
+    });
+
+    return () => {
+      current = false;
+      unsubscribe();
+    };
   }, [id, status]));
 
   const handleJuzAction = async (action: "claim" | "complete") => {
@@ -195,7 +219,7 @@ export default function KhatmaDetails() {
             <View className="mt-4 flex-row flex-wrap justify-between gap-y-2">
               {juz.map((item) => {
                 const stateLabel = item.status === "completed" ? "juzCompleted" : item.status === "claimed" ? "juzClaimed" : "juzAvailable";
-                const style = item.status === "completed" ? "border-green-600 bg-green-600" : item.status === "claimed" ? "border-yellow-400 bg-yellow-400" : "border-gray-300 bg-white";
+                const style = item.status === "completed" ? "border-green-600 bg-green-600" : item.status === "claimed" ? item.claimedBy === currentUserId ? "border-yellow-400 bg-yellow-400" : "border-gray-500 bg-gray-500" : "border-gray-300 bg-white";
                 const textStyle = item.status === "completed" ? "text-white" : "text-gray-900";
                 return (
                   <Pressable key={item.juzNumber} onPress={() => openSheet(item)} accessibilityRole="button" accessibilityLabel={`${i18n.t("juzNumberLabel", { number: item.juzNumber })}, ${i18n.t(stateLabel)}`} className={`w-[15%] aspect-square items-center justify-center rounded-md border ${style}`}>
