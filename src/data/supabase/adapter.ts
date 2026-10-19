@@ -5,6 +5,7 @@ import { createQuranAdapter } from "./adapters/quran";
 import { createAuthAdapter } from "./adapters/auth";
 import { createProfileAdapter } from "./adapters/profile";
 import { createRealtimeAdapter } from "./adapters/realtime";
+import { createZikrAdapter } from "./adapters/zikr";
 
 export function createSupabaseBackend(client: SupabaseClient): AppBackend {
   return {
@@ -12,6 +13,7 @@ export function createSupabaseBackend(client: SupabaseClient): AppBackend {
     profile: createProfileAdapter(client),
     khatma: createKhatmaAdapter(client),
     quran: createQuranAdapter(client),
+    zikr: createZikrAdapter(client),
     realtime: createRealtimeAdapter(client),
   };
 }

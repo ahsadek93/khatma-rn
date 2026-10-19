@@ -13,6 +13,13 @@ export type CompletedKhatma = { id: string; name: string; type: KhatmaType; comp
 export type KhatmaMember = { userId: string; displayName: string | null; role: "owner" | "member"; joinedAt: string };
 export type QuranJuz = { juzNumber: number; status: "free" | "claimed" | "completed"; claimedBy: string | null; claimedByName: string | null };
 export type KhatmaQuranProgress = { completedJuz: number; selectedJuz: number[] };
+export type ZikrKhatmaProgress = {
+  phrase: string;
+  goalCount: number;
+  completedCount: number;
+  pendingCount: number;
+  myPendingCount: number;
+};
 export type KhatmaRealtimeEvent = "connected" | "progressChanged" | "membersChanged" | "completed";
 
 export interface AuthBackend {
@@ -45,6 +52,14 @@ export interface QuranBackend {
   completeJuz(khatmaId: string, juzNumber: number): Promise<BackendResult<null>>;
 }
 
+export interface ZikrBackend {
+  getKhatmaProgress(khatmaId: string): Promise<BackendResult<ZikrKhatmaProgress>>;
+  setClaim(khatmaId: string, amount: number): Promise<BackendResult<null>>;
+  releaseClaim(khatmaId: string): Promise<BackendResult<null>>;
+  completeClaim(khatmaId: string): Promise<BackendResult<null>>;
+  updateSettings(khatmaId: string, phrase: string, goalCount: number): Promise<BackendResult<null>>;
+}
+
 export interface RealtimeBackend {
   subscribeToKhatmaUpdates(khatmaId: string, listener: (event: KhatmaRealtimeEvent) => void): () => void;
 }
@@ -54,5 +69,6 @@ export interface AppBackend {
   profile: ProfileBackend;
   khatma: KhatmaBackend;
   quran: QuranBackend;
+  zikr: ZikrBackend;
   realtime: RealtimeBackend;
 }

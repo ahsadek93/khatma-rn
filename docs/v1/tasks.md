@@ -64,11 +64,10 @@ rules.
 
 ### 3. Add the Zikr feature API and realtime updates
 
-- [ ] Add Zikr types and methods to `src/data/contracts.ts` and a
-  `src/features/zikr/` API module for reading totals/own claim and performing
-  claim, release, complete, and owner-edit actions.
-- [ ] Add a Supabase Zikr adapter and wire it through
-  `src/data/supabase/adapter.ts`.
+- [x] Add Zikr types and methods to `src/data/contracts.ts`, the
+  `src/features/zikr/` API module, and Supabase adapter wiring for reading
+  totals/own claim and performing claim, release, complete, and owner-edit
+  actions.
 - [ ] Extend `src/data/supabase/adapters/realtime.ts` to emit progress updates
   for Zikr claim/config changes using the existing Khatma subscription.
 - [ ] Keep Zikr-specific rules out of `src/features/quran/` and the Quran
