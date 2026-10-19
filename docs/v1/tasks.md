@@ -94,7 +94,7 @@ rules.
 
 ### 5. Keep the Quran dashboard type-safe and verify the feature
 
-- [ ] Filter the Quran dashboard's active and completed Khatma queries to
+- [x] Filter the Quran dashboard's active and completed Khatma queries to
   `quran`; keep its current Juz screen and rules unchanged.
 - [ ] Verify both types can be created by an owner, joined with the shared
   invite flow, and shown only on their matching dashboard.

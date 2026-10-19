@@ -23,7 +23,7 @@ export function ActiveKhatmaSection() {
     setHasError(false);
     setKhatma(null);
     void (async () => {
-      const { data: active, error } = await getMyActiveKhatma();
+      const { data: active, error } = await getMyActiveKhatma("quran");
       if (!isCurrent) return;
       if (error) {
         setHasError(true);

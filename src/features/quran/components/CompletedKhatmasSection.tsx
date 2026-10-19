@@ -15,7 +15,7 @@ export function CompletedKhatmasSection() {
   useFocusEffect(useCallback(() => {
     let isCurrent = true;
     setHasError(false);
-    void getMyCompletedKhatmas().then(({ data, error }) => {
+    void getMyCompletedKhatmas("quran").then(({ data, error }) => {
       if (!isCurrent) return;
       if (error || !data) setHasError(true);
       else setKhatmas(data);
