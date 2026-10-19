@@ -7,8 +7,9 @@ export type BackendResult<T> = { data: T; error: null } | { data: null; error: B
 
 export type AuthUser = { id: string; email: string | null };
 export type UserProfile = { displayName: string; email: string };
-export type KhatmaSummary = { id: string; name: string; memberCount: number };
-export type CompletedKhatma = { id: string; name: string; completedAt: string };
+export type KhatmaType = "quran" | "zikr";
+export type KhatmaSummary = { id: string; name: string; type: KhatmaType; memberCount: number };
+export type CompletedKhatma = { id: string; name: string; type: KhatmaType; completedAt: string };
 export type KhatmaMember = { userId: string; displayName: string | null; role: "owner" | "member"; joinedAt: string };
 export type QuranJuz = { juzNumber: number; status: "free" | "claimed" | "completed"; claimedBy: string | null; claimedByName: string | null };
 export type KhatmaQuranProgress = { completedJuz: number; selectedJuz: number[] };
@@ -31,8 +32,8 @@ export interface KhatmaBackend {
   joinKhatmaByCode(code: string): Promise<BackendResult<string>>;
   getKhatmaMembers(khatmaId: string): Promise<BackendResult<KhatmaMember[]>>;
   getKhatmaJoinCode(khatmaId: string): Promise<BackendResult<string | null>>;
-  getMyActiveKhatma(): Promise<BackendResult<KhatmaSummary | null>>;
-  getMyCompletedKhatmas(): Promise<BackendResult<CompletedKhatma[]>>;
+  getMyActiveKhatma(type?: KhatmaType): Promise<BackendResult<KhatmaSummary | null>>;
+  getMyCompletedKhatmas(type?: KhatmaType): Promise<BackendResult<CompletedKhatma[]>>;
 }
 
 export interface QuranBackend {

@@ -49,7 +49,7 @@ rules.
 
 ### 2. Extend shared Khatma identity and creation/join flows
 
-- [ ] Add `KhatmaType` to `src/data/contracts.ts`; include the type in Khatma
+- [x] Add `KhatmaType` to `src/data/contracts.ts`; include the type in Khatma
   summaries and completed Khatmas.
 - [ ] Update `getMyKhatmaRows` and the Khatma adapter/API to query by type as well
   as active/completed status. Keep the invite-code join function shared.
