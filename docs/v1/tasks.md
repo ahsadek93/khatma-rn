@@ -76,7 +76,7 @@ rules.
 
 ### 4. Build the Zikr dashboard and detail screen
 
-- [ ] Replace the placeholder `src/app/(app)/zikr.tsx` with a dashboard that
+- [x] Replace the placeholder `src/app/(app)/zikr.tsx` with a dashboard that
   lists only the current user's active and completed Zikr Khatmas.
 - [ ] Add Zikr create/join actions that use the shared routes and invite flow.
 - [ ] Add a Zikr Khatma detail route that displays the phrase, goal, completed,
