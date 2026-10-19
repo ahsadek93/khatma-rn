@@ -34,12 +34,11 @@ rules.
 - [x] Add Zikr configuration (phrase and positive goal)
   and per-member progress (pending and completed counts), linked to
   `khatmas(id)` with cascading deletes and constraints against negative counts.
-- [ ] Add member-only read policies for Zikr configuration and progress. Allow
-  only the Khatma owner to edit configuration while the Khatma is active.
+- [x] Add member-only read policies for Zikr configuration and progress.
 - [ ] Add authenticated database functions to set/edit a pending amount,
   release it, complete it, and edit active Khatma configuration. Each function
   must verify membership/ownership, Khatma type, active status, and valid
-  amounts server-side.
+  amounts server-side. Only the Khatma owner can edit configuration.
 - [ ] Make amount changes atomic: serialize updates per Khatma, then ensure
   completed + pending + requested amount never exceeds the goal. Reject goal
   decreases and reject all configuration edits after completion.
