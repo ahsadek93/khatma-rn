@@ -28,7 +28,7 @@ rules.
 
 ### 1. Add type and Zikr progress to Supabase
 
-- [ ] Add a migration under `supabase/migrations/` that adds `khatma_type` to
+- [x] Add a migration under `supabase/migrations/` that adds `khatma_type` to
   `public.khatmas`, allows `quran` and `zikr`, and defaults/backfills existing
   rows to `quran`.
 - [ ] In the same migration, add Zikr configuration (phrase and positive goal)
