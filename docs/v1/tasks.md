@@ -59,7 +59,7 @@ rules.
   Zikr, collect and validate the phrase and goal, then create the shared Khatma
   and its Zikr configuration atomically or through a database function that
   rolls back both on failure.
-- [ ] Keep `src/app/(app)/join-khatma.tsx` shared; the invite code must resolve
+- [x] Keep `src/app/(app)/join-khatma.tsx` shared; the invite code must resolve
   to either Khatma type without requiring a type selector.
 
 ### 3. Add the Zikr feature API and realtime updates

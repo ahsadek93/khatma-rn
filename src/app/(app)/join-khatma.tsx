@@ -22,7 +22,7 @@ export default function JoinKhatmaScreen() {
         setError(true);
         return;
       }
-      router.replace("/(app)/home");
+      router.replace(result.data.type === "zikr" ? "/(app)/zikr" : "/(app)/home");
     } catch {
       setError(true);
     } finally {

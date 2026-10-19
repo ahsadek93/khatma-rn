@@ -32,7 +32,13 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
     async joinKhatmaByCode(code) {
       try {
         const { data, error } = await client.rpc("join_khatma_by_code", { requested_code: code });
-        return error ? failed(error) : backendSuccess(data);
+        if (error) return failed(error);
+        const { data: khatma, error: typeError } = await client
+          .from("khatmas")
+          .select("khatma_type")
+          .eq("id", data)
+          .single();
+        return typeError ? failed(typeError) : backendSuccess({ id: data, type: khatma.khatma_type as KhatmaType });
       } catch (error) {
         return failed(error);
       }
