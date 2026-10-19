@@ -94,7 +94,7 @@ export default function ZikrKhatmaDetails() {
     void load();
     const unsubscribe = status === "completed" ? () => {} : subscribeToKhatmaUpdates(id, (event) => {
       if (event === "completed") setCurrentStatus("completed");
-      if (event !== "connected") void load();
+      else void load();
     });
     return () => {
       current = false;
