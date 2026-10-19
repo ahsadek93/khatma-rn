@@ -11,7 +11,8 @@ export async function getMyKhatmaRows(client: SupabaseClient, status: "active" |
     .select("khatmas!inner(id, name, khatma_type, status, completed_at)")
     .eq("user_id", userResult.data.id)
     .eq("khatmas.khatma_type", type)
-    .eq("khatmas.status", status);
+    .eq("khatmas.status", status)
+    .order("joined_at");
   if (error) return { rows: [], error };
   const rows = (data ?? [])
     .map(({ khatmas }) => Array.isArray(khatmas) ? khatmas[0] : khatmas)

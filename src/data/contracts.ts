@@ -40,7 +40,7 @@ export interface KhatmaBackend {
   joinKhatmaByCode(code: string): Promise<BackendResult<{ id: string; type: KhatmaType }>>;
   getKhatmaMembers(khatmaId: string): Promise<BackendResult<KhatmaMember[]>>;
   getKhatmaJoinCode(khatmaId: string): Promise<BackendResult<string | null>>;
-  getMyActiveKhatma(type?: KhatmaType): Promise<BackendResult<KhatmaSummary | null>>;
+  getMyActiveKhatmas(type?: KhatmaType): Promise<BackendResult<KhatmaSummary[]>>;
   getMyCompletedKhatmas(type?: KhatmaType): Promise<BackendResult<CompletedKhatma[]>>;
 }
 

@@ -23,8 +23,8 @@ export async function getKhatmaJoinCode(khatmaId: string) {
   return backend ? backend.khatma.getKhatmaJoinCode(khatmaId) : backendNotConfigured();
 }
 
-export async function getMyActiveKhatma(type: KhatmaType = "quran") {
-  return backend ? backend.khatma.getMyActiveKhatma(type) : backendNotConfigured();
+export async function getMyActiveKhatmas(type: KhatmaType = "quran") {
+  return backend ? backend.khatma.getMyActiveKhatmas(type) : backendNotConfigured();
 }
 
 export async function getMyCompletedKhatmas(type: KhatmaType = "quran") {

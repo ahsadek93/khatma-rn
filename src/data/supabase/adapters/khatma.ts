@@ -71,7 +71,7 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
         return failed(error);
       }
     },
-    getMyActiveKhatma: (type = "quran") => getMyKhatma(client, "active", type),
+    getMyActiveKhatmas: (type = "quran") => getMyActiveKhatmas(client, type),
     async getMyCompletedKhatmas(type = "quran") {
       try {
         const result = await getMyKhatmaRows(client, "completed", type);
@@ -90,16 +90,22 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
   };
 }
 
-async function getMyKhatma(client: SupabaseClient, status: "active" | "completed", type: KhatmaType = "quran"): Promise<BackendResult<KhatmaSummary | null>> {
+async function getMyActiveKhatmas(client: SupabaseClient, type: KhatmaType = "quran"): Promise<BackendResult<KhatmaSummary[]>> {
   try {
-    const { rows, error } = await getMyKhatmaRows(client, status, type);
+    const { rows, error } = await getMyKhatmaRows(client, "active", type);
     if (error) return failed(error);
-    const khatma = rows[0];
-    if (!khatma) return backendSuccess(null);
-    const { count, error: countError } = await client.from("khatma_members").select("id", { count: "exact", head: true }).eq("khatma_id", khatma.id);
-    if (countError) return failed(countError);
-    const summary: KhatmaSummary = { id: khatma.id, name: khatma.name, type: khatma.khatma_type as KhatmaType, memberCount: count ?? 0 };
-    return backendSuccess(summary);
+    const results = await Promise.all(rows.map(async (khatma) => {
+      const { count, error: countError } = await client.from("khatma_members").select("id", { count: "exact", head: true }).eq("khatma_id", khatma.id);
+      return countError
+        ? { error: countError }
+        : { summary: { id: khatma.id, name: khatma.name, type: khatma.khatma_type as KhatmaType, memberCount: count ?? 0 } satisfies KhatmaSummary };
+    }));
+    const summaries: KhatmaSummary[] = [];
+    for (const result of results) {
+      if ("error" in result) return failed(result.error);
+      summaries.push(result.summary);
+    }
+    return backendSuccess(summaries);
   } catch (error) {
     return failed(error);
   }

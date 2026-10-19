@@ -1,33 +1,33 @@
 import { AppText } from "@/components/AppText";
 import { subscribeToKhatmaUpdates } from "@/data";
-import { getMyActiveKhatma, getMyCompletedKhatmas, type CompletedKhatma, type KhatmaSummary } from "@/features/khatma/api";
+import { getMyActiveKhatmas, getMyCompletedKhatmas, type CompletedKhatma, type KhatmaSummary } from "@/features/khatma/api";
 import { getKhatmaZikrProgress, type ZikrKhatmaProgress } from "@/features/zikr/api";
 import { GroupKhatmaActions } from "@/features/khatma/components/GroupKhatmaActions";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 
 type ActiveZikrKhatma = KhatmaSummary & { progress: ZikrKhatmaProgress };
 
 export function ZikrDashboard() {
   useSettings();
-  const [active, setActive] = useState<ActiveZikrKhatma | null>(null);
+  const [active, setActive] = useState<ActiveZikrKhatma[]>([]);
   const [completed, setCompleted] = useState<CompletedKhatma[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const loadRef = useRef<(() => Promise<void>) | null>(null);
+  const cardWidth = useWindowDimensions().width - 40;
 
   useFocusEffect(useCallback(() => {
     let current = true;
-    let subscribedId: string | null = null;
-    let unsubscribe = () => {};
+    const subscriptions = new Map<string, () => void>();
 
     const load = async () => {
       try {
         const [activeResult, completedResult] = await Promise.all([
-          getMyActiveKhatma("zikr"),
+          getMyActiveKhatmas("zikr"),
           getMyCompletedKhatmas("zikr"),
         ]);
         if (!current) return;
@@ -37,31 +37,35 @@ export function ZikrDashboard() {
           return;
         }
 
-        let nextActive: ActiveZikrKhatma | null = null;
-        if (activeResult.data) {
-          const progressResult = await getKhatmaZikrProgress(activeResult.data.id);
-          if (!current) return;
-          if (progressResult.error) {
-            setHasError(true);
-            setIsLoading(false);
-            return;
-          }
-          nextActive = { ...activeResult.data, progress: progressResult.data };
+        const progressResults = await Promise.all(activeResult.data.map(async (khatma) => ({
+          khatma,
+          result: await getKhatmaZikrProgress(khatma.id),
+        })));
+        if (!current) return;
+        if (progressResults.some(({ result }) => result.error)) {
+          setHasError(true);
+          setIsLoading(false);
+          return;
         }
+        const nextActive = progressResults.map(({ khatma, result }) => ({ ...khatma, progress: result.data! }));
         setActive(nextActive);
         setCompleted(completedResult.data);
         setHasError(false);
         setIsLoading(false);
 
-        if (nextActive && subscribedId !== nextActive.id) {
-          unsubscribe();
-          subscribedId = nextActive.id;
-          unsubscribe = subscribeToKhatmaUpdates(nextActive.id, "zikr", (event) => {
-            if (event === "connected" || event === "progressChanged" || event === "completed") void load();
-          });
-        } else if (!nextActive && subscribedId) {
-          unsubscribe();
-          subscribedId = null;
+        const activeIds = new Set(nextActive.map((khatma) => khatma.id));
+        for (const [id, unsubscribe] of subscriptions) {
+          if (!activeIds.has(id)) {
+            unsubscribe();
+            subscriptions.delete(id);
+          }
+        }
+        for (const khatma of nextActive) {
+          if (!subscriptions.has(khatma.id)) {
+            subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, "zikr", (event) => {
+              if (event !== "connected") void load();
+            }));
+          }
         }
       } catch {
         if (!current) return;
@@ -75,7 +79,7 @@ export function ZikrDashboard() {
     return () => {
       current = false;
       loadRef.current = null;
-      unsubscribe();
+      for (const unsubscribe of subscriptions.values()) unsubscribe();
     };
   }, []));
 
@@ -96,34 +100,40 @@ export function ZikrDashboard() {
                 <AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText>
               </Pressable>
             </View>
-          ) : !active ? (
+          ) : !active.length ? (
             <View className="mt-3 rounded-3xl border border-subtle-border bg-surface p-5">
               <AppText className="text-base font-bold text-foreground">{i18n.t("noActiveZikrKhatmaTitle")}</AppText>
               <AppText className="mt-1 text-sm leading-6 text-secondary-foreground">{i18n.t("noActiveZikrKhatmaBody")}</AppText>
             </View>
           ) : (
-            <Pressable
-              onPress={() => router.push({ pathname: "/(app)/zikr/khatma/[id]", params: { id: active.id, name: active.name, status: "active" } })}
-              accessibilityRole="button"
-              accessibilityLabel={`${active.name}, ${i18n.t("viewZikrKhatma")}`}
-              className="mt-3 rounded-3xl border border-primary/30 bg-surface p-5"
-            >
-              <View className="flex-row items-center justify-between">
-                <AppText className="text-sm font-bold text-primary">{i18n.t("inProgress")}</AppText>
-                <AppText className="text-xs text-secondary-foreground">{i18n.t("activeGroupMembers", { count: active.memberCount })}</AppText>
-              </View>
-              <AppText className="mt-3 text-xl font-bold text-foreground">{active.name}</AppText>
-              <AppText className="mt-2 text-base leading-7 text-foreground">{active.progress.phrase}</AppText>
-              <View className="mt-5 flex-row flex-wrap justify-between gap-y-2">
-                <Count label={i18n.t("zikrCompleted")} value={active.progress.completedCount} />
-                <Count label={i18n.t("zikrPending")} value={active.progress.pendingCount} />
-                <Count label={i18n.t("zikrFree")} value={Math.max(0, active.progress.goalCount - active.progress.completedCount - active.progress.pendingCount)} />
-              </View>
-              <AppText className="mt-3 text-sm text-secondary-foreground">{i18n.t("zikrGoalValue", { count: active.progress.goalCount })}</AppText>
-              <View className="mt-2 h-2 overflow-hidden rounded-full bg-track">
-                <View className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (active.progress.completedCount / active.progress.goalCount) * 100)}%` }} />
-              </View>
-            </Pressable>
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} contentContainerClassName="mt-3">
+              {active.map((khatma) => (
+                <Pressable
+                  key={khatma.id}
+                  style={{ width: cardWidth }}
+                  onPress={() => router.push({ pathname: "/(app)/zikr/khatma/[id]", params: { id: khatma.id, name: khatma.name, status: "active" } })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${khatma.name}, ${i18n.t("viewZikrKhatma")}`}
+                  className="rounded-3xl border border-primary/30 bg-surface p-5"
+                >
+                  <View className="flex-row items-center justify-between">
+                    <AppText className="text-sm font-bold text-primary">{i18n.t("inProgress")}</AppText>
+                    <AppText className="text-xs text-secondary-foreground">{i18n.t("activeGroupMembers", { count: khatma.memberCount })}</AppText>
+                  </View>
+                  <AppText className="mt-3 text-xl font-bold text-foreground">{khatma.name}</AppText>
+                  <AppText className="mt-2 text-base leading-7 text-foreground">{khatma.progress.phrase}</AppText>
+                  <View className="mt-5 flex-row flex-wrap justify-between gap-y-2">
+                    <Count label={i18n.t("zikrCompleted")} value={khatma.progress.completedCount} />
+                    <Count label={i18n.t("zikrPending")} value={khatma.progress.pendingCount} />
+                    <Count label={i18n.t("zikrFree")} value={Math.max(0, khatma.progress.goalCount - khatma.progress.completedCount - khatma.progress.pendingCount)} />
+                  </View>
+                  <AppText className="mt-3 text-sm text-secondary-foreground">{i18n.t("zikrGoalValue", { count: khatma.progress.goalCount })}</AppText>
+                  <View className="mt-2 h-2 overflow-hidden rounded-full bg-track">
+                    <View className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (khatma.progress.completedCount / khatma.progress.goalCount) * 100)}%` }} />
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
           )}
         </View>
 
