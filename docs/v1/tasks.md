@@ -51,7 +51,7 @@ rules.
 
 - [x] Add `KhatmaType` to `src/data/contracts.ts`; include the type in Khatma
   summaries and completed Khatmas.
-- [ ] Update `getMyKhatmaRows` and the Khatma adapter/API to query by type as well
+- [x] Update `getMyKhatmaRows` and the Khatma adapter/API to query by type as well
   as active/completed status. Keep the invite-code join function shared.
 - [ ] Extend shared creation to accept a Khatma type while keeping the current
   Quran creation behavior as the default.

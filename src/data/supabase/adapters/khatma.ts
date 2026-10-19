@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { BackendResult, CompletedKhatma, KhatmaBackend, KhatmaMember, KhatmaSummary } from "../../contracts";
+import type { BackendResult, CompletedKhatma, KhatmaBackend, KhatmaMember, KhatmaSummary, KhatmaType } from "../../contracts";
 import { backendSuccess } from "../../results";
 import { getAuthenticatedUser } from "../shared/current-user";
 import { failed } from "../shared/errors";
@@ -53,14 +53,15 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
         return failed(error);
       }
     },
-    getMyActiveKhatma: () => getMyKhatma(client, "active"),
-    async getMyCompletedKhatmas() {
+    getMyActiveKhatma: (type = "quran") => getMyKhatma(client, "active", type),
+    async getMyCompletedKhatmas(type = "quran") {
       try {
-        const result = await getMyKhatmaRows(client, "completed");
+        const result = await getMyKhatmaRows(client, "completed", type);
         if (result.error) return failed(result.error);
         const khatmas: CompletedKhatma[] = result.rows.map((khatma) => ({
           id: khatma.id,
           name: khatma.name,
+          type: khatma.khatma_type as KhatmaType,
           completedAt: khatma.completed_at ?? "",
         }));
         return backendSuccess(khatmas);
@@ -71,15 +72,15 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
   };
 }
 
-async function getMyKhatma(client: SupabaseClient, status: "active" | "completed"): Promise<BackendResult<KhatmaSummary | null>> {
+async function getMyKhatma(client: SupabaseClient, status: "active" | "completed", type: KhatmaType = "quran"): Promise<BackendResult<KhatmaSummary | null>> {
   try {
-    const { rows, error } = await getMyKhatmaRows(client, status);
+    const { rows, error } = await getMyKhatmaRows(client, status, type);
     if (error) return failed(error);
     const khatma = rows[0];
     if (!khatma) return backendSuccess(null);
     const { count, error: countError } = await client.from("khatma_members").select("id", { count: "exact", head: true }).eq("khatma_id", khatma.id);
     if (countError) return failed(countError);
-    const summary: KhatmaSummary = { id: khatma.id, name: khatma.name, memberCount: count ?? 0 };
+    const summary: KhatmaSummary = { id: khatma.id, name: khatma.name, type: khatma.khatma_type as KhatmaType, memberCount: count ?? 0 };
     return backendSuccess(summary);
   } catch (error) {
     return failed(error);
