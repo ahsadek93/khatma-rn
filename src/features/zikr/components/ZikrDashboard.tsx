@@ -6,7 +6,7 @@ import { GroupKhatmaActions } from "@/features/khatma/components/GroupKhatmaActi
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
 type ActiveZikrKhatma = KhatmaSummary & { progress: ZikrKhatmaProgress };
@@ -17,7 +17,7 @@ export function ZikrDashboard() {
   const [completed, setCompleted] = useState<CompletedKhatma[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [refreshCount, setRefreshCount] = useState(0);
+  const loadRef = useRef<(() => Promise<void>) | null>(null);
 
   useFocusEffect(useCallback(() => {
     let current = true;
@@ -70,12 +70,14 @@ export function ZikrDashboard() {
       }
     };
 
+    loadRef.current = load;
     void load();
     return () => {
       current = false;
+      loadRef.current = null;
       unsubscribe();
     };
-  }, [refreshCount]));
+  }, []));
 
   return (
     <View className="flex-1 bg-background">
@@ -90,7 +92,7 @@ export function ZikrDashboard() {
           ) : hasError ? (
             <View className="mt-3 rounded-2xl border border-subtle-border bg-surface p-4">
               <AppText className="text-sm text-secondary-foreground">{i18n.t("zikrDashboardLoadError")}</AppText>
-              <Pressable accessibilityRole="button" onPress={() => { setIsLoading(true); setHasError(false); setRefreshCount((count) => count + 1); }} className="mt-3 self-start">
+              <Pressable accessibilityRole="button" onPress={() => { setIsLoading(true); setHasError(false); void loadRef.current?.(); }} className="mt-3 self-start">
                 <AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText>
               </Pressable>
             </View>
@@ -101,7 +103,7 @@ export function ZikrDashboard() {
             </View>
           ) : (
             <Pressable
-              onPress={() => router.push({ pathname: "/(app)/zikr-khatma/[id]", params: { id: active.id, name: active.name, status: "active" } })}
+              onPress={() => router.push({ pathname: "/(app)/zikr/khatma/[id]", params: { id: active.id, name: active.name, status: "active" } })}
               accessibilityRole="button"
               accessibilityLabel={`${active.name}, ${i18n.t("viewZikrKhatma")}`}
               className="mt-3 rounded-3xl border border-primary/30 bg-surface p-5"
@@ -135,7 +137,7 @@ export function ZikrDashboard() {
           ) : completed.length ? completed.slice(0, 3).map((khatma) => (
             <Pressable
               key={khatma.id}
-              onPress={() => router.push({ pathname: "/(app)/zikr-khatma/[id]", params: { id: khatma.id, name: khatma.name, status: "completed", completedAt: khatma.completedAt } })}
+              onPress={() => router.push({ pathname: "/(app)/zikr/khatma/[id]", params: { id: khatma.id, name: khatma.name, status: "completed", completedAt: khatma.completedAt } })}
               accessibilityRole="button"
               className="mt-3 rounded-2xl border border-subtle-border bg-surface px-4 py-3"
             >

@@ -76,18 +76,19 @@ rules.
 
 ### 4. Build the Zikr dashboard and detail screen
 
-- [x] Replace the placeholder `src/app/(app)/zikr.tsx` with a dashboard that
-  lists only the current user's active and completed Zikr Khatmas.
+- [x] Replace the placeholder with `src/app/(app)/zikr/index.tsx` and a dashboard
+  that lists only the current user's active and completed Zikr Khatmas.
 - [x] Add Zikr create/join actions that use the shared routes and invite flow.
-- [ ] Add a Zikr Khatma detail route that displays the phrase, goal, completed,
+- [x] Add a Zikr Khatma detail route at `src/app/(app)/zikr/khatma/[id].tsx`
+  that displays the phrase, goal, completed,
   pending, and free amounts; show the member's pending amount and controls to
   change, release, or complete it.
-- [ ] Show owner-only phrase/goal editing while the Khatma is active. Allow
+- [x] Show owner-only phrase/goal editing while the Khatma is active. Allow
   goal increases and phrase correction; disable edits after completion.
-- [ ] Refresh totals after actions and through realtime updates. Handle stale
+- [x] Refresh totals after actions and through realtime updates. Handle stale
   claims with a refreshable error state when a concurrent claim consumes the
   remaining free amount.
-- [ ] Add Arabic and English strings for all new dashboard, creation, claim,
+- [x] Add Arabic and English strings for all new dashboard, creation, claim,
   edit, validation, loading, empty, and error states in `src/locales/ar.json`
   and `src/locales/en.json`.
 
