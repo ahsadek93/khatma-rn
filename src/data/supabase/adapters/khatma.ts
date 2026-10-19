@@ -17,6 +17,18 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
         return failed(error);
       }
     },
+    async createZikrKhatma(name, phrase, goalCount) {
+      try {
+        const { data, error } = await client.rpc("create_zikr_khatma", {
+          target_name: name.trim(),
+          target_phrase: phrase.trim(),
+          target_goal_count: goalCount,
+        });
+        return error ? failed(error) : backendSuccess({ id: data, name: name.trim() });
+      } catch (error) {
+        return failed(error);
+      }
+    },
     async joinKhatmaByCode(code) {
       try {
         const { data, error } = await client.rpc("join_khatma_by_code", { requested_code: code });

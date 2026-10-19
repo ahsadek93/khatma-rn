@@ -53,8 +53,8 @@ rules.
   summaries and completed Khatmas.
 - [x] Update `getMyKhatmaRows` and the Khatma adapter/API to query by type as well
   as active/completed status. Keep the invite-code join function shared.
-- [ ] Extend shared creation to accept a Khatma type while keeping the current
-  Quran creation behavior as the default.
+- [x] Keep current Quran creation behavior as the default and add a Zikr
+  creation call that uses the atomic `create_zikr_khatma` RPC.
 - [ ] Update `src/app/(app)/create-khatma.tsx` to accept the selected type. For
   Zikr, collect and validate the phrase and goal, then create the shared Khatma
   and its Zikr configuration atomically or through a database function that

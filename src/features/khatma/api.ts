@@ -7,6 +7,10 @@ export async function createKhatma(name: string) {
   return backend ? backend.khatma.createKhatma(name) : backendNotConfigured();
 }
 
+export async function createZikrKhatma(name: string, phrase: string, goalCount: number) {
+  return backend ? backend.khatma.createZikrKhatma(name, phrase, goalCount) : backendNotConfigured();
+}
+
 export async function joinKhatmaByCode(code: string) {
   return backend ? backend.khatma.joinKhatmaByCode(code) : backendNotConfigured();
 }
