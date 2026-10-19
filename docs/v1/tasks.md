@@ -31,7 +31,7 @@ rules.
 - [x] Add a migration under `supabase/migrations/` that adds `khatma_type` to
   `public.khatmas`, allows `quran` and `zikr`, and defaults/backfills existing
   rows to `quran`.
-- [ ] In the same migration, add Zikr configuration (phrase and positive goal)
+- [x] Add Zikr configuration (phrase and positive goal)
   and per-member progress (pending and completed counts), linked to
   `khatmas(id)` with cascading deletes and constraints against negative counts.
 - [ ] Add member-only read policies for Zikr configuration and progress. Allow
