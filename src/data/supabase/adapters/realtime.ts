@@ -15,6 +15,7 @@ export function createRealtimeAdapter(client: SupabaseClient): RealtimeBackend {
       if (!subscription) {
         const listeners = new Set<(event: KhatmaRealtimeEvent) => void>([listener]);
         const emit = (event: KhatmaRealtimeEvent) => {
+          if (__DEV__) console.info(`[realtime] ${khatmaId}: ${event}`);
           for (const subscriber of [...listeners]) subscriber(event);
         };
         const channel = client
@@ -53,8 +54,9 @@ export function createRealtimeAdapter(client: SupabaseClient): RealtimeBackend {
         });
         subscription = { channel, listeners };
         subscriptions.set(khatmaId, subscription);
-        channel.subscribe((status) => {
+        channel.subscribe((status, error) => {
           if (status === "SUBSCRIBED") emit("connected");
+          else if (__DEV__) console.warn(`[realtime] ${khatmaId}: ${status}`, error);
         });
       } else {
         subscription.listeners.add(listener);
