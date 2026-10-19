@@ -28,6 +28,18 @@ export function createRealtimeAdapter(client: SupabaseClient): RealtimeBackend {
           .on("postgres_changes", {
             event: "*",
             schema: "public",
+            table: "zikr_khatma_member_progress",
+            filter: `khatma_id=eq.${khatmaId}`,
+          }, () => emit("progressChanged"))
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "zikr_khatma_settings",
+            filter: `khatma_id=eq.${khatmaId}`,
+          }, () => emit("progressChanged"))
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
             table: "khatma_members",
             filter: `khatma_id=eq.${khatmaId}`,
           }, () => emit("membersChanged"));

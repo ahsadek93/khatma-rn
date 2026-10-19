@@ -68,8 +68,9 @@ rules.
   `src/features/zikr/` API module, and Supabase adapter wiring for reading
   totals/own claim and performing claim, release, complete, and owner-edit
   actions.
-- [ ] Extend `src/data/supabase/adapters/realtime.ts` to emit progress updates
-  for Zikr claim/config changes using the existing Khatma subscription.
+- [x] Extend `src/data/supabase/adapters/realtime.ts` and Supabase publication
+  to emit progress updates for Zikr claim/config changes using the existing
+  Khatma subscription.
 - [ ] Keep Zikr-specific rules out of `src/features/quran/` and the Quran
   progress table.
 
