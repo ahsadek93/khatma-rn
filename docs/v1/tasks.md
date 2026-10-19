@@ -43,7 +43,7 @@ rules.
   Complete the shared Khatma only when completed total reaches the goal;
   pending amounts do not count. Block claim changes after completion and all
   phrase/goal edits after completion.
-- [ ] Add a database verification script or documented SQL checks for legacy
+- [x] Add a database verification script or documented SQL checks for legacy
   backfill, RLS access, over-claim races, claim edit/release/complete, owner
   edits, and completion rules.
 

@@ -35,11 +35,15 @@ returns claimant display names only to members of that Khatma. The app stores
 the displayed name in `profiles.display_name` and never accesses `auth.users`
 directly.
 
-The `khatma` migration owns Khatma lifecycle and membership. Members join with
-the Khatma invite code through `join_khatma_by_code`. The `quran` migration owns
-Juz availability and its free, claimed, and completed transitions through the
+The `khatma` migration owns Khatma lifecycle, type, and membership. Existing
+Khatmas default to the Quran type. Members join either type with the shared
+invite code through `join_khatma_by_code`. The `quran` migration owns Juz
+availability and its free, claimed, and completed transitions through the
 `claim_quran_juz`, `release_quran_juz`, and `complete_quran_juz` functions.
 The `get_khatma_juz_details` function returns Juz status and claimant names to
 Khatma members. The dashboard composes reads from the Khatma and Quran feature
-APIs. Keep future Zikr tables and rules in a separate Zikr migration and
-feature module.
+APIs. Zikr configuration and member counts live in separate Zikr tables; the
+`create_zikr_khatma`, `set_zikr_khatma_claim`, `release_zikr_khatma_claim`,
+`complete_zikr_khatma_claim`, and `update_zikr_khatma_settings` functions own
+their write rules. See [Zikr Khatma database verification](zikr-khatma-verification.md)
+for checks against a configured Supabase project.
