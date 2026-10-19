@@ -31,6 +31,14 @@ export function createRealtimeAdapter(client: SupabaseClient): RealtimeBackend {
             table: "khatma_members",
             filter: `khatma_id=eq.${khatmaId}`,
           }, () => emit("membersChanged"));
+        channel.on("postgres_changes", {
+          event: "UPDATE",
+          schema: "public",
+          table: "khatmas",
+          filter: `id=eq.${khatmaId}`,
+        }, (payload) => {
+          if (payload.new.status === "completed") emit("completed");
+        });
         subscription = { channel, listeners };
         subscriptions.set(khatmaId, subscription);
         channel.subscribe((status) => {

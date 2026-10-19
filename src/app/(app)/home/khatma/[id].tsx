@@ -40,13 +40,14 @@ export default function KhatmaDetails() {
   const [isSaving, setIsSaving] = useState(false);
   const [actionError, setActionError] = useState(false);
   const [showMyJuzOnly, setShowMyJuzOnly] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(status);
   const sheetY = useSharedValue(0);
   const backdropOpacity = useSharedValue(0);
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.value }] }));
   const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
   const completedCount = juz.filter((item) => item.status === "completed").length;
   const visibleJuz = showMyJuzOnly ? juz.filter((item) => item.status !== "free" && item.claimedBy === currentUserId) : juz;
-  const isCompleted = status === "completed";
+  const isCompleted = currentStatus === "completed";
 
   useFocusEffect(useCallback(() => {
     let current = true;
@@ -92,7 +93,8 @@ export default function KhatmaDetails() {
     };
 
     const unsubscribe = subscribeToKhatmaUpdates(id, (event) => {
-      if (event !== "connected") refreshLiveDetails();
+      if (event === "completed") setCurrentStatus("completed");
+      else if (event !== "connected") refreshLiveDetails();
     });
 
     return () => {
