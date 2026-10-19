@@ -252,7 +252,7 @@ export default function KhatmaDetails() {
       </ScrollView>
       <Modal visible={selectedJuz !== null || showMembers} transparent presentationStyle="overFullScreen" animationType="none" onRequestClose={() => !isSaving && closeSheet()}>
         <View className="flex-1 justify-end">
-          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFillObject, backdropStyle]} className="bg-black" />
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, backdropStyle]} className="bg-black" />
           <Pressable className="absolute inset-0" accessibilityRole="button" accessibilityLabel={i18n.t("close")} onPress={() => !isSaving && closeSheet()} />
           <Animated.View style={sheetStyle} className={showMembers ? "h-[80%] w-full" : "w-full"}>
           <View className={`max-h-[90%] rounded-t-3xl border-t border-subtle-border bg-background px-5 pb-8 pt-5 ${showMembers ? "flex-1" : ""}`}>
@@ -264,7 +264,7 @@ export default function KhatmaDetails() {
                   {members.map((member) => (
                     <View key={member.userId} className="flex-row items-center rounded-xl bg-surface px-3 py-3">
                       <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-primary/15">
-                        <AppText className="font-bold text-primary">{(member.displayName || i18n.t("unknownKhatmaMember")).slice(0, 1)}</AppText>
+                        <AppText className="font-bold text-primary">{(member.displayName || i18n.t("unknownKhatmaMember") || "?").slice(0, 1)}</AppText>
                       </View>
                       <AppText className="flex-1 text-sm font-medium text-foreground">{member.displayName || i18n.t("unknownKhatmaMember")}</AppText>
                       {member.role === "owner" ? <AppText className="text-xs text-secondary-foreground">{i18n.t("khatmaOwner")}</AppText> : null}

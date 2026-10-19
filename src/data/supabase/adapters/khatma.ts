@@ -33,7 +33,7 @@ export function createKhatmaAdapter(client: SupabaseClient): KhatmaBackend {
         ]);
         if (membershipResult.error) return failed(membershipResult.error);
         if (detailsResult.error) return failed(detailsResult.error);
-        const names = new Map((detailsResult.data ?? []).map((member) => [member.user_id, member.display_name || null]));
+        const names = new Map<string, string | null>((detailsResult.data ?? []).map((member: { user_id: string; display_name: string | null }) => [member.user_id, member.display_name || null]));
         const members: KhatmaMember[] = (membershipResult.data ?? []).map((member) => ({
           userId: member.user_id,
           displayName: names.get(member.user_id) ?? null,
