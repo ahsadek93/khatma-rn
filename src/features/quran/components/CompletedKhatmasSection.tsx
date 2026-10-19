@@ -1,8 +1,7 @@
 import { AppText } from "@/components/AppText";
 import { i18n } from "@/i18n";
 import { Pressable, View } from "react-native";
-import { router } from "expo-router";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { getMyCompletedKhatmas, type CompletedKhatma } from "@/features/khatma/api";
 import { SkeletonBlock } from "./SkeletonBlock";
