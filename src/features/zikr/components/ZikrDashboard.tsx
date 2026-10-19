@@ -2,6 +2,7 @@ import { AppText } from "@/components/AppText";
 import { subscribeToKhatmaUpdates } from "@/data";
 import { getMyActiveKhatma, getMyCompletedKhatmas, type CompletedKhatma, type KhatmaSummary } from "@/features/khatma/api";
 import { getKhatmaZikrProgress, type ZikrKhatmaProgress } from "@/features/zikr/api";
+import { GroupKhatmaActions } from "@/features/khatma/components/GroupKhatmaActions";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router, useFocusEffect } from "expo-router";
@@ -149,6 +150,7 @@ export function ZikrDashboard() {
           )}
         </View>
       </ScrollView>
+      <GroupKhatmaActions type="zikr" />
     </View>
   );
 }

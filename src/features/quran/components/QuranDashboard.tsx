@@ -3,7 +3,7 @@ import { i18n } from "@/i18n";
 import { ScrollView, View } from "react-native";
 import { ActiveKhatmaSection } from "./ActiveKhatmaSection";
 import { CompletedKhatmasSection } from "./CompletedKhatmasSection";
-import { GroupKhatmaActions } from "./GroupKhatmaActions";
+import { GroupKhatmaActions } from "@/features/khatma/components/GroupKhatmaActions";
 import { useSettings } from "@/stores/settings";
 
 export function QuranDashboard() {
@@ -17,7 +17,7 @@ export function QuranDashboard() {
         <ActiveKhatmaSection />
         <CompletedKhatmasSection />
       </ScrollView>
-      <GroupKhatmaActions />
+      <GroupKhatmaActions type="quran" />
     </View>
   );
 }
