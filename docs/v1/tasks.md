@@ -71,7 +71,7 @@ rules.
 - [x] Extend `src/data/supabase/adapters/realtime.ts` and Supabase publication
   to emit progress updates for Zikr claim/config changes using the existing
   Khatma subscription.
-- [ ] Keep Zikr-specific rules out of `src/features/quran/` and the Quran
+- [x] Keep Zikr-specific rules out of `src/features/quran/` and the Quran
   progress table.
 
 ### 4. Build the Zikr dashboard and detail screen
