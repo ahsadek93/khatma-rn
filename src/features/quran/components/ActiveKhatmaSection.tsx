@@ -54,7 +54,7 @@ export function ActiveKhatmaSection() {
             if (isCurrent) setHasError(true);
           });
         };
-        unsubscribe = subscribeToKhatmaUpdates(active.id, (event) => {
+        unsubscribe = subscribeToKhatmaUpdates(active.id, "quran", (event) => {
           if (event === "connected" || event === "progressChanged") refreshProgress();
         });
       }

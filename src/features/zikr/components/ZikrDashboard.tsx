@@ -56,7 +56,7 @@ export function ZikrDashboard() {
         if (nextActive && subscribedId !== nextActive.id) {
           unsubscribe();
           subscribedId = nextActive.id;
-          unsubscribe = subscribeToKhatmaUpdates(nextActive.id, (event) => {
+          unsubscribe = subscribeToKhatmaUpdates(nextActive.id, "zikr", (event) => {
             if (event === "connected" || event === "progressChanged" || event === "completed") void load();
           });
         } else if (!nextActive && subscribedId) {

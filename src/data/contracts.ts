@@ -61,7 +61,7 @@ export interface ZikrBackend {
 }
 
 export interface RealtimeBackend {
-  subscribeToKhatmaUpdates(khatmaId: string, listener: (event: KhatmaRealtimeEvent) => void): () => void;
+  subscribeToKhatmaUpdates(khatmaId: string, type: KhatmaType, listener: (event: KhatmaRealtimeEvent) => void): () => void;
 }
 
 export interface AppBackend {

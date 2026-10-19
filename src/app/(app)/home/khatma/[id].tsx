@@ -92,7 +92,7 @@ export default function KhatmaDetails() {
       });
     };
 
-    const unsubscribe = subscribeToKhatmaUpdates(id, (event) => {
+    const unsubscribe = subscribeToKhatmaUpdates(id, "quran", (event) => {
       if (event === "completed") setCurrentStatus("completed");
       else if (event !== "connected") refreshLiveDetails();
     });

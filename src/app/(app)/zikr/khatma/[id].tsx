@@ -92,9 +92,31 @@ export default function ZikrKhatmaDetails() {
 
     loadRef.current = load;
     void load();
-    const unsubscribe = status === "completed" ? () => {} : subscribeToKhatmaUpdates(id, (event) => {
-      if (event === "completed") setCurrentStatus("completed");
-      else void load();
+    const refreshLiveDetails = async () => {
+      try {
+        const [progressResult, membersResult] = await Promise.all([
+          getKhatmaZikrProgress(id),
+          getKhatmaMembers(id),
+        ]);
+        if (!current) return;
+        if (progressResult.error || membersResult.error) {
+          setLoadError(true);
+          return;
+        }
+        setProgress(progressResult.data);
+        setMembers(membersResult.data);
+        setCurrentStatus(status === "completed" || progressResult.data.completedCount >= progressResult.data.goalCount ? "completed" : "active");
+        setLoadError(false);
+      } catch {
+        if (current) setLoadError(true);
+      }
+    };
+    const unsubscribe = status === "completed" ? () => {} : subscribeToKhatmaUpdates(id, "zikr", (event) => {
+      if (event === "completed") {
+        setCurrentStatus("completed");
+        void refreshLiveDetails();
+      }
+      else if (event !== "connected") void refreshLiveDetails();
     });
     return () => {
       current = false;
