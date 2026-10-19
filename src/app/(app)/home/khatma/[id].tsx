@@ -242,7 +242,7 @@ export default function KhatmaDetails() {
                 const textStyle = item.status === "completed" ? "text-white" : "text-gray-900";
                 return (
                   <Pressable key={item.juzNumber} onPress={() => openSheet(item)} accessibilityRole="button" accessibilityLabel={`${i18n.t("juzNumberLabel", { number: item.juzNumber })}, ${i18n.t(stateLabel)}`} className={`w-[14%] aspect-square items-center justify-center rounded-md border ${style}`}>
-                    <AppText className={`h-full w-full text-center text-xs font-bold ${textStyle}`} style={{ textAlignVertical: "center", includeFontPadding: false }}>{item.juzNumber}</AppText>
+                    <AppText className={`h-full w-full text-center text-sm font-bold ${textStyle}`} style={{ textAlignVertical: "center", includeFontPadding: false }}>{item.juzNumber}</AppText>
                   </Pressable>
                 );
               })}
@@ -254,8 +254,8 @@ export default function KhatmaDetails() {
         <View className="flex-1 justify-end">
           <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFillObject, backdropStyle]} className="bg-black" />
           <Pressable className="absolute inset-0" accessibilityRole="button" accessibilityLabel={i18n.t("close")} onPress={() => !isSaving && closeSheet()} />
-          <Animated.View style={sheetStyle}>
-          <View style={showMembers ? { height: "80%" } : undefined} className="max-h-[90%] rounded-t-3xl border-t border-subtle-border bg-background px-5 pb-8 pt-5">
+          <Animated.View style={sheetStyle} className={showMembers ? "h-[80%] w-full" : "w-full"}>
+          <View className={`max-h-[90%] rounded-t-3xl border-t border-subtle-border bg-background px-5 pb-8 pt-5 ${showMembers ? "flex-1" : ""}`}>
             {showMembers ? <>
               <AppText className="mb-4 text-xl font-bold text-foreground">{i18n.t("khatmaParticipants")}</AppText>
               <AppText className="-mt-2 mb-3 text-sm text-secondary-foreground">{i18n.t("activeGroupMembers", { count: members.length })}</AppText>
