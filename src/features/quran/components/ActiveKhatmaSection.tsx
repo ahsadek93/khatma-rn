@@ -1,4 +1,5 @@
 import { AppText } from "@/components/AppText";
+import { SkeletonBlock } from "@/components/SkeletonBlock";
 import { subscribeToKhatmaUpdates } from "@/data";
 import { i18n } from "@/i18n";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
@@ -6,7 +7,6 @@ import { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { getMyActiveKhatmas, type KhatmaSummary } from "@/features/khatma/api";
 import { getKhatmaQuranProgress } from "../api";
-import { SkeletonBlock } from "./SkeletonBlock";
 
 type Khatma = KhatmaSummary & { completedJuz: number; selectedJuz: number[] };
 

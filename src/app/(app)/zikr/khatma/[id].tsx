@@ -11,6 +11,7 @@ import {
   type ZikrKhatmaProgress,
 } from "@/features/zikr/api";
 import { i18n } from "@/i18n";
+import { ZikrKhatmaDetailsSkeleton } from "@/features/zikr/components/ZikrKhatmaDetailsSkeleton";
 import { useSettings } from "@/stores/settings";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useRef, useState } from "react";
@@ -226,7 +227,7 @@ export default function ZikrKhatmaDetails() {
           <AppText className="font-bold text-primary">{`‹  ${i18n.t("back")}`}</AppText>
         </Pressable>
 
-        {isLoading ? <AppText className="mt-8 text-center text-secondary-foreground">{i18n.t("loading")}</AppText> : loadError || !progress ? (
+        {isLoading ? <ZikrKhatmaDetailsSkeleton /> : loadError || !progress ? (
           <View className="rounded-3xl border border-subtle-border bg-surface p-5">
             <AppText className="text-sm text-secondary-foreground">{i18n.t("zikrDetailsLoadError")}</AppText>
             <Pressable accessibilityRole="button" onPress={() => { setIsLoading(true); void loadRef.current?.(); }} className="mt-3 self-start">
