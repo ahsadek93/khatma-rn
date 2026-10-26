@@ -1,4 +1,4 @@
-import { backend, isBackendConfigured } from "./supabase/provider";
+import { backend, isBackendConfigured } from "./backend";
 import type { KhatmaRealtimeEvent, KhatmaType } from "./contracts";
 
 export function subscribeToKhatmaUpdates(
