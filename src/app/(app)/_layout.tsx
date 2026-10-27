@@ -41,6 +41,7 @@ export default function AppLayout() {
         name="home"
         options={{
           title: i18n.t("tabQuran"),
+          popToTopOnBlur: true,
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: "book.closed", android: "menu_book", web: "menu_book" }}
@@ -56,6 +57,7 @@ export default function AppLayout() {
         name="zikr"
         options={{
           title: i18n.t("tabZikr"),
+          popToTopOnBlur: true,
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: "sparkles", android: "auto_awesome", web: "auto_awesome" }}
