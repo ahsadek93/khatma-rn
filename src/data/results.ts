@@ -14,7 +14,3 @@ export function unexpectedBackendError(error: unknown): BackendError {
     message: error instanceof Error ? error.message : String(error),
   };
 }
-
-export function backendNotConfigured<T = never>(): BackendResult<T> {
-  return backendFailure({ code: "unavailable", message: "Backend is not configured" });
-}

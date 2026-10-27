@@ -9,8 +9,6 @@ const sessionKey = "khatma.be.session";
 const baseUrl = process.env.EXPO_PUBLIC_KHATMA_BE_URL?.replace(/\/$/, "");
 let refreshing: Promise<BackendResult<Session>> | null = null;
 
-export const isBackendConfigured = Boolean(baseUrl);
-
 export async function getSession(): Promise<Session | null> {
   try {
     const value = await AsyncStorage.getItem(sessionKey);

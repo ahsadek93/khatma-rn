@@ -1,4 +1,4 @@
-import { backend, isBackendConfigured } from "./backend";
+import { backend } from "./backend";
 import type { KhatmaRealtimeEvent, KhatmaType } from "./contracts";
 
 export function subscribeToKhatmaUpdates(
@@ -6,7 +6,7 @@ export function subscribeToKhatmaUpdates(
   type: KhatmaType,
   listener: (event: KhatmaRealtimeEvent) => void,
 ): () => void {
-  return backend?.realtime.subscribeToKhatmaUpdates(khatmaId, type, listener) ?? (() => {});
+  return backend.realtime.subscribeToKhatmaUpdates(khatmaId, type, listener);
 }
 
-export { backend, isBackendConfigured };
+export { backend };

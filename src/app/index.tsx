@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { Redirect } from "expo-router";
-import { isBackendConfigured } from "@/data";
 import { getCurrentUser } from "@/features/auth/api";
 
 export default function Index() {
-  const [destination, setDestination] = useState<"/(auth)/welcome" | "/(app)/home" | null>(
-    isBackendConfigured ? null : "/(auth)/welcome",
-  );
+  const [destination, setDestination] = useState<"/(auth)/welcome" | "/(app)/home" | null>(null);
 
   useEffect(() => {
     let active = true;

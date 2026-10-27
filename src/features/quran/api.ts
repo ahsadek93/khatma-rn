@@ -1,15 +1,14 @@
 import { backend } from "@/data";
-import { backendNotConfigured } from "@/data/results";
 export type { KhatmaQuranProgress, QuranJuz } from "@/data/contracts";
 
 export async function getKhatmaJuz(khatmaId: string) {
-  return backend ? backend.quran.getKhatmaJuz(khatmaId) : backendNotConfigured();
+  return backend.quran.getKhatmaJuz(khatmaId);
 }
 
 export async function getKhatmaQuranProgress(khatmaId: string) {
-  return backend ? backend.quran.getKhatmaQuranProgress(khatmaId) : backendNotConfigured();
+  return backend.quran.getKhatmaQuranProgress(khatmaId);
 }
 
-export const claimJuz = (khatmaId: string, juzNumber: number) => backend ? backend.quran.claimJuz(khatmaId, juzNumber) : backendNotConfigured();
-export const releaseJuz = (khatmaId: string, juzNumber: number) => backend ? backend.quran.releaseJuz(khatmaId, juzNumber) : backendNotConfigured();
-export const completeJuz = (khatmaId: string, juzNumber: number) => backend ? backend.quran.completeJuz(khatmaId, juzNumber) : backendNotConfigured();
+export const claimJuz = (khatmaId: string, juzNumber: number) => backend.quran.claimJuz(khatmaId, juzNumber);
+export const releaseJuz = (khatmaId: string, juzNumber: number) => backend.quran.releaseJuz(khatmaId, juzNumber);
+export const completeJuz = (khatmaId: string, juzNumber: number) => backend.quran.completeJuz(khatmaId, juzNumber);

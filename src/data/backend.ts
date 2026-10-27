@@ -1,6 +1,6 @@
 import type { AppBackend, AuthUser, KhatmaRealtimeEvent, KhatmaType } from "./contracts";
 import { backendFailure, backendSuccess } from "./results";
-import { clearSession, getSession, isBackendConfigured, request, saveSession, unavailable } from "./http";
+import { clearSession, getSession, request, saveSession, unavailable } from "./http";
 
 const idPath = (id: string) => encodeURIComponent(id);
 
@@ -82,8 +82,6 @@ export const backend: AppBackend = {
   },
 };
 
-export { isBackendConfigured };
-
 async function action(path: string, body?: unknown, method = "POST") {
   const result = await request<unknown>(path, { method, body });
   return result.error ? result : backendSuccess(null);
@@ -91,7 +89,8 @@ async function action(path: string, body?: unknown, method = "POST") {
 
 async function subscribe(id: string, listener: (event: KhatmaRealtimeEvent) => void, xhr: XMLHttpRequest, isCancelled: () => boolean) {
   const session = await getSession();
-  if (!session || !isBackendConfigured || isCancelled()) return;
+  const baseUrl = process.env.EXPO_PUBLIC_KHATMA_BE_URL?.replace(/\/$/, "");
+  if (!session || !baseUrl || isCancelled()) return;
   let offset = 0;
   let pending = "";
   let event = "message";
@@ -103,7 +102,7 @@ async function subscribe(id: string, listener: (event: KhatmaRealtimeEvent) => v
     event = "message";
     data = [];
   };
-  xhr.open("GET", `${process.env.EXPO_PUBLIC_KHATMA_BE_URL?.replace(/\/$/, "")}/realtime/khatmas/${idPath(id)}/events`);
+  xhr.open("GET", `${baseUrl}/realtime/khatmas/${idPath(id)}/events`);
   xhr.setRequestHeader("Accept", "text/event-stream");
   xhr.setRequestHeader("Authorization", `Bearer ${session.accessToken}`);
   xhr.onprogress = () => {

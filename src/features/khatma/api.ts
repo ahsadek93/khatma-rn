@@ -1,32 +1,31 @@
 import { backend } from "@/data";
 import type { KhatmaType } from "@/data/contracts";
-import { backendNotConfigured } from "@/data/results";
 export type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType } from "@/data/contracts";
 
 export async function createKhatma(name: string) {
-  return backend ? backend.khatma.createKhatma(name) : backendNotConfigured();
+  return backend.khatma.createKhatma(name);
 }
 
 export async function createZikrKhatma(name: string, phrase: string, goalCount: number) {
-  return backend ? backend.khatma.createZikrKhatma(name, phrase, goalCount) : backendNotConfigured();
+  return backend.khatma.createZikrKhatma(name, phrase, goalCount);
 }
 
 export async function joinKhatmaByCode(code: string) {
-  return backend ? backend.khatma.joinKhatmaByCode(code) : backendNotConfigured();
+  return backend.khatma.joinKhatmaByCode(code);
 }
 
 export async function getKhatmaMembers(khatmaId: string) {
-  return backend ? backend.khatma.getKhatmaMembers(khatmaId) : backendNotConfigured();
+  return backend.khatma.getKhatmaMembers(khatmaId);
 }
 
 export async function getKhatmaJoinCode(khatmaId: string) {
-  return backend ? backend.khatma.getKhatmaJoinCode(khatmaId) : backendNotConfigured();
+  return backend.khatma.getKhatmaJoinCode(khatmaId);
 }
 
 export async function getMyActiveKhatmas(type: KhatmaType = "quran") {
-  return backend ? backend.khatma.getMyActiveKhatmas(type) : backendNotConfigured();
+  return backend.khatma.getMyActiveKhatmas(type);
 }
 
 export async function getMyCompletedKhatmas(type: KhatmaType = "quran") {
-  return backend ? backend.khatma.getMyCompletedKhatmas(type) : backendNotConfigured();
+  return backend.khatma.getMyCompletedKhatmas(type);
 }

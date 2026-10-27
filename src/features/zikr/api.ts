@@ -1,19 +1,18 @@
 import { backend } from "@/data";
-import { backendNotConfigured } from "@/data/results";
 export type { ZikrKhatmaProgress } from "@/data/contracts";
 
 export async function getKhatmaZikrProgress(khatmaId: string) {
-  return backend ? backend.zikr.getKhatmaProgress(khatmaId) : backendNotConfigured();
+  return backend.zikr.getKhatmaProgress(khatmaId);
 }
 
 export const setZikrClaim = (khatmaId: string, amount: number) =>
-  backend ? backend.zikr.setClaim(khatmaId, amount) : backendNotConfigured();
+  backend.zikr.setClaim(khatmaId, amount);
 
 export const releaseZikrClaim = (khatmaId: string) =>
-  backend ? backend.zikr.releaseClaim(khatmaId) : backendNotConfigured();
+  backend.zikr.releaseClaim(khatmaId);
 
 export const completeZikrClaim = (khatmaId: string) =>
-  backend ? backend.zikr.completeClaim(khatmaId) : backendNotConfigured();
+  backend.zikr.completeClaim(khatmaId);
 
 export const updateZikrKhatmaSettings = (khatmaId: string, phrase: string, goalCount: number) =>
-  backend ? backend.zikr.updateSettings(khatmaId, phrase, goalCount) : backendNotConfigured();
+  backend.zikr.updateSettings(khatmaId, phrase, goalCount);
