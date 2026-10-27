@@ -180,8 +180,21 @@ export default function KhatmaDetails() {
         <View className="rounded-3xl border border-subtle-border bg-surface p-5">
           <View className="flex-row items-center justify-between">
             <AppText className="text-sm font-bold text-primary">{i18n.t("khatmaDetails")}</AppText>
-            <View className="rounded-full bg-primary/15 px-3 py-1">
-              <AppText className="text-xs font-bold text-primary">{i18n.t(isCompleted ? "completedBadge" : "inProgress")}</AppText>
+            <View className="flex-row items-center gap-2">
+              {!isCompleted && joinCode ? (
+                <Pressable onPress={handleShare} accessibilityRole="button" accessibilityLabel={i18n.t("shareKhatma")} className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <View className="h-6 w-6">
+                    <View className="absolute left-[7px] top-[9px] h-[2px] w-[10px] rotate-[-30deg] rounded-full bg-primary" />
+                    <View className="absolute left-[7px] top-[15px] h-[2px] w-[10px] rotate-[30deg] rounded-full bg-primary" />
+                    <View className="absolute left-[3px] top-[9px] h-[6px] w-[6px] rounded-full bg-primary" />
+                    <View className="absolute left-[15px] top-[2px] h-[6px] w-[6px] rounded-full bg-primary" />
+                    <View className="absolute left-[15px] top-[16px] h-[6px] w-[6px] rounded-full bg-primary" />
+                  </View>
+                </Pressable>
+              ) : null}
+              <View className="rounded-full bg-primary/15 px-3 py-1">
+                <AppText className="text-xs font-bold text-primary">{i18n.t(isCompleted ? "completedBadge" : "inProgress")}</AppText>
+              </View>
             </View>
           </View>
           <AppText className="mt-4 text-2xl font-bold text-foreground">{name}</AppText>
@@ -196,13 +209,9 @@ export default function KhatmaDetails() {
           <View className="mt-2 h-2 overflow-hidden rounded-full bg-track">
             <View className="h-full rounded-full bg-primary" style={{ width: `${(completedCount / 30) * 100}%` }} />
           </View>
-          {!isCompleted ? joinCode ? (
-            <Pressable onPress={handleShare} accessibilityRole="button" className="mt-5 items-center rounded-2xl bg-primary px-4 py-3">
-              <AppText className="font-bold text-background">{i18n.t("shareKhatma")}</AppText>
-            </Pressable>
-          ) : joinCodeError ? (
+          {!isCompleted && !joinCode && joinCodeError ? (
             <AppText className="mt-4 text-sm text-secondary-foreground">{i18n.t("khatmaCodeLoadError")}</AppText>
-          ) : null : null}
+          ) : null}
           {shareError ? <AppText accessibilityRole="alert" className="mt-3 text-sm text-red-500">{i18n.t("shareKhatmaError")}</AppText> : null}
         </View>
 
