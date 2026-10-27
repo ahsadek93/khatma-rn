@@ -10,7 +10,7 @@ export default function JoinKhatmaScreen() {
   const [error, setError] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const normalizedCode = code;
-  const isValidCode = /^[0-9A-F]{12}$/.test(normalizedCode);
+  const isValidCode = /^[0-9A-F]{1,24}$/.test(normalizedCode);
 
   async function handleJoin() {
     if (!isValidCode || isJoining) return;
@@ -51,7 +51,7 @@ export default function JoinKhatmaScreen() {
             placeholderTextColor="#8b978f"
             autoCapitalize="characters"
             autoCorrect={false}
-            maxLength={12}
+            maxLength={24}
             returnKeyType="done"
             onSubmitEditing={() => void handleJoin()}
             className="rounded-2xl border border-subtle-border bg-background px-4 py-3 text-base text-foreground"

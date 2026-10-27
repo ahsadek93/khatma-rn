@@ -11,6 +11,7 @@
       "icon": "./assets/images/app-icon.jpg"
     },
     "android": {
+      "package": "com.sadek.khatma",
       "icon": "./assets/images/app-icon.jpg",
       "adaptiveIcon": {
         "backgroundColor": "#121E1A",

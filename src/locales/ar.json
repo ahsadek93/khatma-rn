@@ -97,7 +97,7 @@
     "joinKhatmaTitle": "الانضمام إلى ختمة جماعية",
     "joinKhatmaDescription": "أدخل رمز الدعوة الذي شاركه منظّم الختمة.",
     "khatmaCodeLabel": "رمز الدعوة",
-    "khatmaCodePlaceholder": "أدخل الرمز المكوّن من 12 حرفًا",
+  "khatmaCodePlaceholder": "أدخل رمز الدعوة",
     "joinKhatmaButton": "الانضمام إلى الختمة",
     "joinKhatmaError": "تعذّر الانضمام بهذا الرمز. تحقّق منه وحاول مجددًا.",
     "shareKhatma": "مشاركة الختمة",

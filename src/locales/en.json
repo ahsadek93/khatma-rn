@@ -97,7 +97,7 @@
     "joinKhatmaTitle": "Join a group Khatma",
     "joinKhatmaDescription": "Enter the invite code shared by the Khatma organizer.",
     "khatmaCodeLabel": "Invite code",
-    "khatmaCodePlaceholder": "Enter the 12-character code",
+  "khatmaCodePlaceholder": "Enter the invite code",
     "joinKhatmaButton": "Join Khatma",
     "joinKhatmaError": "We couldn't join with that code. Check it and try again.",
     "shareKhatma": "Share Khatma",
