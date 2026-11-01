@@ -1,6 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
-import { subscribeToKhatmaUpdates } from "@/data";
+import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
 import { getMyActiveKhatmas, type KhatmaSummary } from "@/features/khatma/api";
 import { getKhatmaZikrProgress, type ZikrKhatmaProgress } from "@/features/zikr/api";
 import { i18n } from "@/i18n";
@@ -58,7 +58,7 @@ export function ActiveZikrKhatmaSection() {
         }
         for (const khatma of nextActive) {
           if (!subscriptions.has(khatma.id)) {
-            subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, "zikr", (event) => {
+            subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, (event) => {
               if (event !== "connected") void load();
             }));
           }

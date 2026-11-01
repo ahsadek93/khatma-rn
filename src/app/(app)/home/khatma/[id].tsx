@@ -1,5 +1,5 @@
 import { AppText } from "@/components/AppText";
-import { subscribeToKhatmaUpdates } from "@/data";
+import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
 import { getCurrentUser } from "@/features/auth/api";
 import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
@@ -92,7 +92,7 @@ export default function KhatmaDetails() {
       });
     };
 
-    const unsubscribe = subscribeToKhatmaUpdates(id, "quran", (event) => {
+    const unsubscribe = subscribeToKhatmaUpdates(id, (event) => {
       if (event === "completed") setCurrentStatus("completed");
       else if (event !== "connected") refreshLiveDetails();
     });

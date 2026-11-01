@@ -1,18 +1,27 @@
-import { backend } from "@/data";
+import { request } from "@/data/http";
+import { backendSuccess } from "@/data/results";
+import type { ZikrKhatmaProgress } from "@/data/contracts";
 export type { ZikrKhatmaProgress } from "@/data/contracts";
 
+const idPath = (id: string) => encodeURIComponent(id);
+
 export async function getKhatmaZikrProgress(khatmaId: string) {
-  return backend.zikr.getKhatmaProgress(khatmaId);
+  return request<ZikrKhatmaProgress>(`/zikr/khatmas/${idPath(khatmaId)}/progress`);
 }
 
 export const setZikrClaim = (khatmaId: string, amount: number) =>
-  backend.zikr.setClaim(khatmaId, amount);
+  action(`/zikr/khatmas/${idPath(khatmaId)}/claim`, { amount });
 
 export const releaseZikrClaim = (khatmaId: string) =>
-  backend.zikr.releaseClaim(khatmaId);
+  action(`/zikr/khatmas/${idPath(khatmaId)}/release`);
 
 export const completeZikrClaim = (khatmaId: string) =>
-  backend.zikr.completeClaim(khatmaId);
+  action(`/zikr/khatmas/${idPath(khatmaId)}/complete`);
 
 export const updateZikrKhatmaSettings = (khatmaId: string, phrase: string, goalCount: number) =>
-  backend.zikr.updateSettings(khatmaId, phrase, goalCount);
+  action(`/zikr/khatmas/${idPath(khatmaId)}/settings`, { phrase, goalCount }, "PATCH");
+
+async function action(path: string, body?: unknown, method = "POST") {
+  const result = await request<unknown>(path, { method, body });
+  return result.error ? result : backendSuccess(null);
+}

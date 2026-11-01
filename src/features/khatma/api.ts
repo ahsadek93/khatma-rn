@@ -1,31 +1,35 @@
-import { backend } from "@/data";
-import type { KhatmaType } from "@/data/contracts";
+import { request } from "@/data/http";
+import { backendSuccess } from "@/data/results";
+import type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType } from "@/data/contracts";
 export type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType } from "@/data/contracts";
 
+const idPath = (id: string) => encodeURIComponent(id);
+
 export async function createKhatma(name: string) {
-  return backend.khatma.createKhatma(name);
+  return request<{ id: string; name: string }>("/khatmas", { method: "POST", body: { name } });
 }
 
 export async function createZikrKhatma(name: string, phrase: string, goalCount: number) {
-  return backend.khatma.createZikrKhatma(name, phrase, goalCount);
+  return request<{ id: string; name: string }>("/zikr/khatmas", { method: "POST", body: { name, phrase, goalCount } });
 }
 
 export async function joinKhatmaByCode(code: string) {
-  return backend.khatma.joinKhatmaByCode(code);
+  return request<{ id: string; type: KhatmaType }>("/khatmas/join", { method: "POST", body: { code } });
 }
 
 export async function getKhatmaMembers(khatmaId: string) {
-  return backend.khatma.getKhatmaMembers(khatmaId);
+  return request<KhatmaMember[]>(`/khatmas/${idPath(khatmaId)}/members`);
 }
 
 export async function getKhatmaJoinCode(khatmaId: string) {
-  return backend.khatma.getKhatmaJoinCode(khatmaId);
+  const result = await request<{ joinCode: string | null }>(`/khatmas/${idPath(khatmaId)}/invite`);
+  return result.error ? result : backendSuccess(result.data.joinCode);
 }
 
 export async function getMyActiveKhatmas(type: KhatmaType = "quran") {
-  return backend.khatma.getMyActiveKhatmas(type);
+  return request<KhatmaSummary[]>(`/khatmas?status=active&type=${type}`);
 }
 
 export async function getMyCompletedKhatmas(type: KhatmaType = "quran") {
-  return backend.khatma.getMyCompletedKhatmas(type);
+  return request<CompletedKhatma[]>(`/khatmas?status=completed&type=${type}`);
 }

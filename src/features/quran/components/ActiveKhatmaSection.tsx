@@ -1,6 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
-import { subscribeToKhatmaUpdates } from "@/data";
+import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
 import { i18n } from "@/i18n";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 import { useCallback, useState } from "react";
@@ -51,7 +51,7 @@ export function ActiveKhatmaSection() {
       }
       for (const khatma of nextKhatmas) {
         if (!subscriptions.has(khatma.id)) {
-          subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, "quran", (event) => {
+          subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, (event) => {
             if (event === "completed" || event === "membersChanged") load();
             if (event === "progressChanged") {
               void getKhatmaQuranProgress(khatma.id).then(({ data, error: progressError }) => {

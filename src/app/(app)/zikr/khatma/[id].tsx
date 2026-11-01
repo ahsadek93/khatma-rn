@@ -1,5 +1,5 @@
 import { AppText } from "@/components/AppText";
-import { subscribeToKhatmaUpdates } from "@/data";
+import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
 import { getCurrentUser } from "@/features/auth/api";
 import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import {
@@ -112,7 +112,7 @@ export default function ZikrKhatmaDetails() {
         if (current) setLoadError(true);
       }
     };
-    const unsubscribe = status === "completed" ? () => {} : subscribeToKhatmaUpdates(id, "zikr", (event) => {
+    const unsubscribe = status === "completed" ? () => {} : subscribeToKhatmaUpdates(id, (event) => {
       if (event === "completed") {
         setCurrentStatus("completed");
         void refreshLiveDetails();

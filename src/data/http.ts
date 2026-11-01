@@ -6,7 +6,7 @@ type Session = { accessToken: string; refreshToken: string };
 type RequestOptions = { method?: string; body?: unknown; auth?: boolean; retry?: boolean };
 
 const sessionKey = "khatma.be.session";
-const baseUrl = process.env.EXPO_PUBLIC_KHATMA_BE_URL?.replace(/\/$/, "");
+export const baseUrl = process.env.EXPO_PUBLIC_KHATMA_BE_URL?.replace(/\/$/, "");
 let refreshing: Promise<BackendResult<Session>> | null = null;
 
 export async function getSession(): Promise<Session | null> {
