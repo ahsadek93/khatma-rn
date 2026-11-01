@@ -1,12 +1,12 @@
 import { request } from "@/data/http";
 import { backendSuccess } from "@/data/results";
-import type { KhatmaQuranProgress, QuranJuz } from "@/data/contracts";
-export type { KhatmaQuranProgress, QuranJuz } from "@/data/contracts";
+import type { KhatmaQuranProgress, PaginatedResponse, QuranJuz } from "@/data/contracts";
+export type { KhatmaQuranProgress, PaginatedResponse, QuranJuz } from "@/data/contracts";
 
 const idPath = (id: string) => encodeURIComponent(id);
 
 export async function getKhatmaJuz(khatmaId: string) {
-  return request<QuranJuz[]>(`/quran/khatmas/${idPath(khatmaId)}/juz`);
+  return request<PaginatedResponse<QuranJuz>>(`/quran/khatmas/${idPath(khatmaId)}/juz`);
 }
 
 export async function getKhatmaQuranProgress(khatmaId: string) {

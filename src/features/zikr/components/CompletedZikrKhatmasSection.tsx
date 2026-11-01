@@ -8,6 +8,7 @@ import { Pressable, View } from "react-native";
 
 export function CompletedZikrKhatmasSection() {
   const [khatmas, setKhatmas] = useState<CompletedKhatma[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -17,7 +18,8 @@ export function CompletedZikrKhatmasSection() {
       if (!isCurrent) return;
       if (error || !data) setHasError(true);
       else {
-        setKhatmas(data);
+        setKhatmas(data.data);
+        setTotal(data.pagination.total);
         setHasError(false);
       }
       setIsLoading(false);
@@ -33,7 +35,7 @@ export function CompletedZikrKhatmasSection() {
     <View className="mt-7">
       <View className="flex-row items-center justify-between">
         <AppText className="text-xl font-bold text-foreground">{i18n.t("completedZikrKhatmas")}</AppText>
-        {isLoading ? <SkeletonBlock className="h-5 w-8" /> : <AppText className="text-xs font-bold text-secondary-foreground">{khatmas.length}</AppText>}
+        {isLoading ? <SkeletonBlock className="h-5 w-8" /> : <AppText className="text-xs font-bold text-secondary-foreground">{total}</AppText>}
       </View>
       {isLoading ? (
         <View className="mt-3 gap-3">

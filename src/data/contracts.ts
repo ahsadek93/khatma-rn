@@ -4,6 +4,10 @@ export type BackendError = {
 };
 
 export type BackendResult<T> = { data: T; error: null } | { data: null; error: BackendError };
+export type PaginatedResponse<T> = {
+  data: T[];
+  pagination: { currentPage: number; perPage: number; pages: number; from: number; to: number; total: number };
+};
 
 export type AuthUser = { id: string; email: string | null };
 export type UserProfile = { displayName: string; email: string };

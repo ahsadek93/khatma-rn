@@ -8,6 +8,7 @@ import { getMyCompletedKhatmas, type CompletedKhatma } from "@/features/khatma/a
 
 export function CompletedKhatmasSection() {
   const [khatmas, setKhatmas] = useState<CompletedKhatma[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -17,7 +18,10 @@ export function CompletedKhatmasSection() {
     void getMyCompletedKhatmas("quran").then(({ data, error }) => {
       if (!isCurrent) return;
       if (error || !data) setHasError(true);
-      else setKhatmas(data);
+      else {
+        setKhatmas(data.data);
+        setTotal(data.pagination.total);
+      }
       setIsLoading(false);
     }).catch(() => {
       if (!isCurrent) return;
@@ -35,7 +39,7 @@ export function CompletedKhatmasSection() {
         </AppText>
         {isLoading ? <SkeletonBlock className="h-5 w-8" /> : (
           <View className="min-w-7 items-center rounded-full bg-surface px-2 py-1">
-            <AppText className="text-xs font-bold text-secondary-foreground">{khatmas.length}</AppText>
+            <AppText className="text-xs font-bold text-secondary-foreground">{total}</AppText>
           </View>
         )}
       </View>

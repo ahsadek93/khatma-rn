@@ -33,7 +33,7 @@ export function ActiveZikrKhatmaSection() {
           return;
         }
 
-        const progressResults = await Promise.all(result.data.map(async (khatma) => ({
+        const progressResults = await Promise.all(result.data.data.map(async (khatma) => ({
           khatma,
           result: await getKhatmaZikrProgress(khatma.id),
         })));

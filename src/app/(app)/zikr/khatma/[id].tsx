@@ -63,7 +63,7 @@ export default function ZikrKhatmaDetails() {
           return;
         }
         setProgress(progressResult.data);
-        setMembers(membersResult.data);
+        setMembers(membersResult.data.data);
         setCurrentUserId(userResult.data.id);
         setCurrentStatus(status === "completed" || progressResult.data.completedCount >= progressResult.data.goalCount ? "completed" : "active");
         setLoadError(false);
@@ -105,7 +105,7 @@ export default function ZikrKhatmaDetails() {
           return;
         }
         setProgress(progressResult.data);
-        setMembers(membersResult.data);
+        setMembers(membersResult.data.data);
         setCurrentStatus(status === "completed" || progressResult.data.completedCount >= progressResult.data.goalCount ? "completed" : "active");
         setLoadError(false);
       } catch {

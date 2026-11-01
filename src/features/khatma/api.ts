@@ -1,7 +1,7 @@
 import { request } from "@/data/http";
 import { backendSuccess } from "@/data/results";
-import type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType } from "@/data/contracts";
-export type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType } from "@/data/contracts";
+import type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType, PaginatedResponse } from "@/data/contracts";
+export type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType, PaginatedResponse } from "@/data/contracts";
 
 const idPath = (id: string) => encodeURIComponent(id);
 
@@ -18,7 +18,7 @@ export async function joinKhatmaByCode(code: string) {
 }
 
 export async function getKhatmaMembers(khatmaId: string) {
-  return request<KhatmaMember[]>(`/khatmas/${idPath(khatmaId)}/members`);
+  return request<PaginatedResponse<KhatmaMember>>(`/khatmas/${idPath(khatmaId)}/members`);
 }
 
 export async function getKhatmaJoinCode(khatmaId: string) {
@@ -27,9 +27,9 @@ export async function getKhatmaJoinCode(khatmaId: string) {
 }
 
 export async function getMyActiveKhatmas(type: KhatmaType = "quran") {
-  return request<KhatmaSummary[]>(`/khatmas?status=active&type=${type}`);
+  return request<PaginatedResponse<KhatmaSummary>>(`/khatmas?status=active&type=${type}`);
 }
 
 export async function getMyCompletedKhatmas(type: KhatmaType = "quran") {
-  return request<CompletedKhatma[]>(`/khatmas?status=completed&type=${type}`);
+  return request<PaginatedResponse<CompletedKhatma>>(`/khatmas?status=completed&type=${type}`);
 }

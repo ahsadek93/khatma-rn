@@ -62,8 +62,8 @@ export default function KhatmaDetails() {
       if (!current) return;
       if (juzResult.error || membersResult.error) setHasError(true);
       else {
-        setJuz(juzResult.data);
-        setMembers(membersResult.data);
+        setJuz(juzResult.data.data);
+        setMembers(membersResult.data.data);
         setCurrentUserId(userResult.error ? null : userResult.data?.id ?? null);
       }
       if (status === "active") {
@@ -84,8 +84,8 @@ export default function KhatmaDetails() {
           setHasError(true);
           return;
         }
-        setJuz(juzResult.data);
-        setMembers(membersResult.data);
+        setJuz(juzResult.data.data);
+        setMembers(membersResult.data.data);
         setHasError(false);
       }).catch(() => {
         if (current) setHasError(true);
@@ -121,7 +121,7 @@ export default function KhatmaDetails() {
     closeSheet();
     setIsSaving(false);
     const refreshed = await getKhatmaJuz(id);
-    if (!refreshed.error) setJuz(refreshed.data);
+    if (!refreshed.error) setJuz(refreshed.data.data);
   };
 
   const handleShare = () => {

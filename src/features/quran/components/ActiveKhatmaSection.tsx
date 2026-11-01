@@ -23,13 +23,14 @@ export function ActiveKhatmaSection() {
     setHasError(false);
     const load = () => {
       void (async () => {
-      const { data: active, error } = await getMyActiveKhatmas("quran");
+      const { data: activePage, error } = await getMyActiveKhatmas("quran");
       if (!isCurrent) return;
       if (error) {
         setHasError(true);
         setIsLoading(false);
         return;
       }
+      const active = activePage.data;
       const progressResults = await Promise.all(active.map(async (khatma) => ({
         khatma,
         result: await getKhatmaQuranProgress(khatma.id),
