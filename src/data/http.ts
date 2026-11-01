@@ -1,4 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import type { BackendError, BackendResult } from "./contracts";
 import { backendFailure, backendSuccess, unexpectedBackendError } from "./results";
 
@@ -6,12 +7,13 @@ type Session = { accessToken: string; refreshToken: string };
 type RequestOptions = { method?: string; body?: unknown; auth?: boolean; retry?: boolean };
 
 const sessionKey = "khatma.be.session";
+let webSession: string | null = null;
 export const baseUrl = process.env.EXPO_PUBLIC_KHATMA_BE_URL?.replace(/\/$/, "");
 let refreshing: Promise<BackendResult<Session>> | null = null;
 
 export async function getSession(): Promise<Session | null> {
   try {
-    const value = await AsyncStorage.getItem(sessionKey);
+    const value = await readSession();
     return value ? JSON.parse(value) as Session : null;
   } catch {
     return null;
@@ -19,11 +21,21 @@ export async function getSession(): Promise<Session | null> {
 }
 
 export async function saveSession(session: Session) {
-  await AsyncStorage.setItem(sessionKey, JSON.stringify(session));
+  const value = JSON.stringify(session);
+  if (Platform.OS === "web") webSession = value;
+  else await SecureStore.setItemAsync(sessionKey, value);
 }
 
 export async function clearSession() {
-  await AsyncStorage.removeItem(sessionKey);
+  if (Platform.OS === "web") webSession = null;
+  else await SecureStore.deleteItemAsync(sessionKey);
+}
+
+async function readSession() {
+  if (Platform.OS === "web") {
+    return webSession;
+  }
+  return SecureStore.getItemAsync(sessionKey);
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<BackendResult<T>> {
