@@ -43,8 +43,8 @@ export default function KhatmaDetails() {
   const [currentStatus, setCurrentStatus] = useState(status);
   const sheetY = useSharedValue(0);
   const backdropOpacity = useSharedValue(0);
-  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.value }] }));
-  const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.value }));
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.get() }] }));
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.get() }));
   const completedCount = juz.filter((item) => item.status === "completed").length;
   const visibleJuz = showMyJuzOnly ? juz.filter((item) => item.status !== "free" && item.claimedBy === currentUserId) : juz;
   const isCompleted = currentStatus === "completed";
@@ -132,14 +132,14 @@ export default function KhatmaDetails() {
   };
 
   const openSheet = (item: QuranJuz) => {
-    sheetY.value = reduceMotion ? 0 : 420;
-    backdropOpacity.value = 0;
+    sheetY.set(reduceMotion ? 0 : 420);
+    backdropOpacity.set(0);
     setSelectedJuz(item);
     setActionError(false);
     if (reduceMotion) return;
     requestAnimationFrame(() => {
-      sheetY.value = withSpring(0, { damping: 26, stiffness: 240, mass: 0.85 });
-      backdropOpacity.value = withTiming(0.52, { duration: 220 });
+      sheetY.set(withSpring(0, { damping: 26, stiffness: 240, mass: 0.85 }));
+      backdropOpacity.set(withTiming(0.52, { duration: 220 }));
     });
   };
 
@@ -149,10 +149,10 @@ export default function KhatmaDetails() {
       setShowMembers(false);
       return;
     }
-    sheetY.value = withTiming(420, { duration: 220, easing: Easing.in(Easing.cubic) }, (finished) => {
+    sheetY.set(withTiming(420, { duration: 220, easing: Easing.in(Easing.cubic) }, (finished) => {
       if (finished) runOnJS(finishClosingSheet)();
-    });
-    backdropOpacity.value = withTiming(0, { duration: 180 });
+    }));
+    backdropOpacity.set(withTiming(0, { duration: 180 }));
   };
 
   const finishClosingSheet = () => {
@@ -161,13 +161,13 @@ export default function KhatmaDetails() {
   };
 
   const openMembersSheet = () => {
-    sheetY.value = reduceMotion ? 0 : 420;
-    backdropOpacity.value = 0;
+    sheetY.set(reduceMotion ? 0 : 420);
+    backdropOpacity.set(0);
     setShowMembers(true);
     if (reduceMotion) return;
     requestAnimationFrame(() => {
-      sheetY.value = withSpring(0, { damping: 26, stiffness: 240, mass: 0.85 });
-      backdropOpacity.value = withTiming(0.52, { duration: 220 });
+      sheetY.set(withSpring(0, { damping: 26, stiffness: 240, mass: 0.85 }));
+      backdropOpacity.set(withTiming(0.52, { duration: 220 }));
     });
   };
 
