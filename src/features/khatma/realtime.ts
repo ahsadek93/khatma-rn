@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSession, baseUrl } from "@/data/http";
@@ -48,8 +48,16 @@ export function useKhatmaRealtime(ids: string[]) {
   const key = ids.join(",");
   // shortcut: a stream that drops while the screen stays focused (app foregrounded without navigating) stays dead,
   // and any id-set change reconnects all streams; reconnect in xhr.onloadend when not cancelled if this matters.
+  const focusedBefore = useRef(false);
   useFocusEffect(useCallback(() => {
-    const unsubscribes = (key ? key.split(",") : []).map((id) =>
+    const keyIds = key ? key.split(",") : [];
+    // mount already fetches; on refocus catch up on events missed while streams were closed
+    if (focusedBefore.current && keyIds.length) {
+      keyIds.forEach((id) => void queryClient.invalidateQueries({ queryKey: ["khatma", id] }));
+      void queryClient.invalidateQueries({ queryKey: ["khatmas"] });
+    }
+    if (keyIds.length) focusedBefore.current = true;
+    const unsubscribes = keyIds.map((id) =>
       subscribeToKhatmaUpdates(id, (event) => {
         if (event === "connected") return;
         void queryClient.invalidateQueries({ queryKey: ["khatma", id] });
