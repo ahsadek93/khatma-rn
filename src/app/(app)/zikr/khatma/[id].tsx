@@ -1,20 +1,19 @@
 import { AppText } from "@/components/AppText";
-import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
+import { useKhatmaRealtime } from "@/features/khatma/realtime";
 import { useMe } from "@/features/profile/api";
-import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
+import { useKhatmaInvite, useKhatmaMembers } from "@/features/khatma/api";
 import {
-  completeZikrClaim,
-  getKhatmaZikrProgress,
-  releaseZikrClaim,
-  setZikrClaim,
-  updateZikrKhatmaSettings,
-  type ZikrKhatmaProgress,
+  useCompleteZikrClaim,
+  useReleaseZikrClaim,
+  useSetZikrClaim,
+  useUpdateZikrSettings,
+  useZikrProgress,
 } from "@/features/zikr/api";
 import { i18n } from "@/i18n";
 import { ZikrKhatmaDetailsSkeleton } from "@/features/zikr/components/ZikrKhatmaDetailsSkeleton";
 import { useSettings } from "@/stores/settings";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Share, TextInput, View } from "react-native";
 
 type KhatmaStatus = "active" | "completed";
@@ -27,166 +26,68 @@ export default function ZikrKhatmaDetails() {
     status?: KhatmaStatus;
     completedAt?: string;
   }>();
-  const [progress, setProgress] = useState<ZikrKhatmaProgress | null>(null);
-  const [members, setMembers] = useState<KhatmaMember[]>([]);
+  const progressQuery = useZikrProgress(id);
+  const membersQuery = useKhatmaMembers(id);
+  const invite = useKhatmaInvite(id, status !== "completed");
+  const progress = progressQuery.data ?? null;
+  const members = membersQuery.data ?? [];
   const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
-  const [currentStatus, setCurrentStatus] = useState<KhatmaStatus>(status === "completed" ? "completed" : "active");
-  const [joinCode, setJoinCode] = useState<string | null>(null);
-  const [joinCodeError, setJoinCodeError] = useState(false);
+  const joinCode = invite.data ?? null;
+  const joinCodeError = invite.isError || (invite.isSuccess && !invite.data);
   const [shareError, setShareError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const isLoading = progressQuery.isPending || membersQuery.isPending;
+  const loadError = progressQuery.isError || membersQuery.isError;
   const [actionError, setActionError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [claimAmount, setClaimAmount] = useState("");
   const [phraseDraft, setPhraseDraft] = useState("");
   const [goalDraft, setGoalDraft] = useState("");
-  const loadRef = useRef<(() => Promise<void>) | null>(null);
+  const initialized = useRef(false);
   const isOwner = members.some((member) => member.userId === currentUserId && member.role === "owner");
-  const isCompleted = currentStatus === "completed";
+  const isCompleted = status === "completed" || (progress !== null && progress.completedCount >= progress.goalCount);
   const freeCount = progress ? Math.max(0, progress.goalCount - progress.completedCount - progress.pendingCount) : 0;
+  useKhatmaRealtime(status === "completed" ? [] : [id]);
 
-  useFocusEffect(useCallback(() => {
-    let current = true;
-    let initialized = false;
-    const load = async () => {
-      try {
-        const [progressResult, membersResult] = await Promise.all([
-          getKhatmaZikrProgress(id),
-          getKhatmaMembers(id),
-        ]);
-        if (!current) return;
-        if (progressResult.error || membersResult.error) {
-          setLoadError(true);
-          setIsLoading(false);
-          return;
-        }
-        setProgress(progressResult.data);
-        setMembers(membersResult.data.data);
-        setCurrentStatus(status === "completed" || progressResult.data.completedCount >= progressResult.data.goalCount ? "completed" : "active");
-        setLoadError(false);
-        if (!initialized) {
-          setClaimAmount(String(progressResult.data.myPendingCount || ""));
-          setPhraseDraft(progressResult.data.phrase);
-          setGoalDraft(String(progressResult.data.goalCount));
-          initialized = true;
-        }
-        setIsLoading(false);
+  useEffect(() => {
+    if (!progress || initialized.current) return;
+    initialized.current = true;
+    setClaimAmount(String(progress.myPendingCount || ""));
+    setPhraseDraft(progress.phrase);
+    setGoalDraft(String(progress.goalCount));
+  }, [progress]);
 
-        if (status !== "completed") {
-          const codeResult = await getKhatmaJoinCode(id);
-          if (!current) return;
-          if (codeResult.error || !codeResult.data) setJoinCodeError(true);
-          else {
-            setJoinCode(codeResult.data);
-            setJoinCodeError(false);
-          }
-        }
-      } catch {
-        if (current) setLoadError(true);
-      } finally {
-        if (current) setIsLoading(false);
-      }
-    };
+  const claim = useSetZikrClaim(id);
+  const release = useReleaseZikrClaim(id);
+  const complete = useCompleteZikrClaim(id);
+  const saveSettings = useUpdateZikrSettings(id);
+  const isSaving = claim.isPending || release.isPending || complete.isPending || saveSettings.isPending;
 
-    loadRef.current = load;
-    void load();
-    const refreshLiveDetails = async () => {
-      try {
-        const [progressResult, membersResult] = await Promise.all([
-          getKhatmaZikrProgress(id),
-          getKhatmaMembers(id),
-        ]);
-        if (!current) return;
-        if (progressResult.error || membersResult.error) {
-          setLoadError(true);
-          return;
-        }
-        setProgress(progressResult.data);
-        setMembers(membersResult.data.data);
-        setCurrentStatus(status === "completed" || progressResult.data.completedCount >= progressResult.data.goalCount ? "completed" : "active");
-        setLoadError(false);
-      } catch {
-        if (current) setLoadError(true);
-      }
-    };
-    const unsubscribe = status === "completed" ? () => {} : subscribeToKhatmaUpdates(id, (event) => {
-      if (event === "completed") {
-        setCurrentStatus("completed");
-        void refreshLiveDetails();
-      }
-      else if (event !== "connected") void refreshLiveDetails();
-    });
-    return () => {
-      current = false;
-      loadRef.current = null;
-      unsubscribe();
-    };
-  }, [id, status]));
-
-  async function handleSaveClaim() {
+  function handleSaveClaim() {
     const amount = Number(claimAmount);
-    if (!/^\d+$/.test(claimAmount.trim()) || !Number.isSafeInteger(amount) || amount <= 0) {
+    if (!/^[0-9]+$/.test(claimAmount.trim()) || !Number.isSafeInteger(amount) || amount <= 0) {
       setActionError("zikrClaimAmountInvalid");
       return;
     }
-    setIsSaving(true);
     setActionError("");
-    try {
-      const result = await setZikrClaim(id, amount);
-      if (result.error) setActionError("zikrClaimError");
-      else {
-        setClaimAmount(String(amount));
-        void loadRef.current?.();
-      }
-    } catch {
-      setActionError("zikrClaimError");
-    } finally {
-      setIsSaving(false);
-    }
+    claim.mutate(amount, { onSuccess: () => setClaimAmount(String(amount)), onError: () => setActionError("zikrClaimError") });
   }
 
-  async function handleReleaseClaim() {
-    setIsSaving(true);
+  function handleReleaseClaim() {
     setActionError("");
-    try {
-      const result = await releaseZikrClaim(id);
-      if (result.error) setActionError("zikrReleaseError");
-      else {
-        setClaimAmount("");
-        void loadRef.current?.();
-      }
-    } catch {
-      setActionError("zikrReleaseError");
-    } finally {
-      setIsSaving(false);
-    }
+    release.mutate(undefined, { onSuccess: () => setClaimAmount(""), onError: () => setActionError("zikrReleaseError") });
   }
 
-  async function handleCompleteClaim() {
-    setIsSaving(true);
+  function handleCompleteClaim() {
     setActionError("");
-    try {
-      const result = await completeZikrClaim(id);
-      if (result.error) setActionError("zikrCompleteError");
-      else {
-        setClaimAmount("");
-        void loadRef.current?.();
-      }
-    } catch {
-      setActionError("zikrCompleteError");
-    } finally {
-      setIsSaving(false);
-    }
+    complete.mutate(undefined, { onSuccess: () => setClaimAmount(""), onError: () => setActionError("zikrCompleteError") });
   }
 
-  async function handleSaveSettings() {
+  function handleSaveSettings() {
     const goal = Number(goalDraft);
     if (!phraseDraft.trim() || phraseDraft.trim().length > 500) {
       setActionError("zikrPhraseInvalid");
       return;
     }
-    if (!/^\d+$/.test(goalDraft.trim()) || !Number.isSafeInteger(goal) || goal <= 0) {
+    if (!/^[0-9]+$/.test(goalDraft.trim()) || !Number.isSafeInteger(goal) || goal <= 0) {
       setActionError("zikrGoalInvalid");
       return;
     }
@@ -194,21 +95,12 @@ export default function ZikrKhatmaDetails() {
       setActionError("zikrGoalCannotDecrease");
       return;
     }
-    setIsSaving(true);
     setActionError("");
-    try {
-      const result = await updateZikrKhatmaSettings(id, phraseDraft.trim(), goal);
-      if (result.error) setActionError("zikrSettingsError");
-      else {
-        setPhraseDraft(phraseDraft.trim());
-        setGoalDraft(String(goal));
-        void loadRef.current?.();
-      }
-    } catch {
-      setActionError("zikrSettingsError");
-    } finally {
-      setIsSaving(false);
-    }
+    const phrase = phraseDraft.trim();
+    saveSettings.mutate({ phrase, goal }, {
+      onSuccess: () => { setPhraseDraft(phrase); setGoalDraft(String(goal)); },
+      onError: () => setActionError("zikrSettingsError"),
+    });
   }
 
   function handleShare() {
@@ -228,7 +120,7 @@ export default function ZikrKhatmaDetails() {
         {isLoading ? <ZikrKhatmaDetailsSkeleton /> : loadError || !progress ? (
           <View className="rounded-3xl border border-subtle-border bg-surface p-5">
             <AppText className="text-sm text-secondary-foreground">{i18n.t("zikrDetailsLoadError")}</AppText>
-            <Pressable accessibilityRole="button" onPress={() => { setIsLoading(true); void loadRef.current?.(); }} className="mt-3 self-start">
+            <Pressable accessibilityRole="button" onPress={() => { void progressQuery.refetch(); void membersQuery.refetch(); }} className="mt-3 self-start">
               <AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText>
             </Pressable>
           </View>
@@ -277,14 +169,14 @@ export default function ZikrKhatmaDetails() {
               editable={!isSaving}
               className="rounded-2xl border border-subtle-border bg-background px-4 py-3 text-base text-foreground"
             />
-            <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving || (freeCount === 0 && progress.myPendingCount === 0) }} disabled={isSaving || (freeCount === 0 && progress.myPendingCount === 0)} onPress={() => void handleSaveClaim()} className="mt-3 items-center rounded-xl bg-primary px-4 py-3">
+            <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving || (freeCount === 0 && progress.myPendingCount === 0) }} disabled={isSaving || (freeCount === 0 && progress.myPendingCount === 0)} onPress={() => handleSaveClaim()} className="mt-3 items-center rounded-xl bg-primary px-4 py-3">
               <AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : progress.myPendingCount ? "updateZikrClaim" : "claimZikrAmount")}</AppText>
             </Pressable>
             {progress.myPendingCount > 0 ? <View className="mt-3 flex-row gap-3">
-              <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving }} disabled={isSaving} onPress={() => void handleReleaseClaim()} className="flex-1 items-center rounded-xl border border-primary/40 px-3 py-3">
+              <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving }} disabled={isSaving} onPress={() => handleReleaseClaim()} className="flex-1 items-center rounded-xl border border-primary/40 px-3 py-3">
                 <AppText className="font-bold text-primary">{i18n.t("releaseZikrClaim")}</AppText>
               </Pressable>
-              <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving }} disabled={isSaving} onPress={() => void handleCompleteClaim()} className="flex-1 items-center rounded-xl bg-primary/15 px-3 py-3">
+              <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving }} disabled={isSaving} onPress={() => handleCompleteClaim()} className="flex-1 items-center rounded-xl bg-primary/15 px-3 py-3">
                 <AppText className="font-bold text-primary">{i18n.t("completeZikrClaim")}</AppText>
               </Pressable>
             </View> : null}
@@ -311,14 +203,14 @@ export default function ZikrKhatmaDetails() {
               editable={!isSaving}
               className="rounded-2xl border border-subtle-border bg-background px-4 py-3 text-base text-foreground"
             />
-            <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving }} disabled={isSaving} onPress={() => void handleSaveSettings()} className="mt-4 items-center rounded-xl bg-primary px-4 py-3">
+            <Pressable accessibilityRole="button" accessibilityState={{ disabled: isSaving }} disabled={isSaving} onPress={() => handleSaveSettings()} className="mt-4 items-center rounded-xl bg-primary px-4 py-3">
               <AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "saveZikrSettings")}</AppText>
             </Pressable>
           </View> : null}
 
           {actionError ? <View className="mt-4 flex-row items-center justify-between rounded-2xl border border-subtle-border bg-surface p-4">
             <AppText accessibilityRole="alert" className="flex-1 text-sm text-red-500">{i18n.t(actionError)}</AppText>
-            {actionError === "zikrClaimError" ? <Pressable accessibilityRole="button" onPress={() => { setActionError(""); void loadRef.current?.(); }} className="ml-3"><AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText></Pressable> : null}
+            {actionError === "zikrClaimError" ? <Pressable accessibilityRole="button" onPress={() => { setActionError(""); void progressQuery.refetch(); }} className="ml-3"><AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText></Pressable> : null}
           </View> : null}
         </>}
       </ScrollView>

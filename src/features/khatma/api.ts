@@ -27,6 +27,21 @@ export async function getKhatmaJoinCode(khatmaId: string) {
   return result.error ? result : backendSuccess(result.data.joinCode);
 }
 
+export function useKhatmaMembers(id: string) {
+  return useQuery({
+    queryKey: ["khatma", id, "members"],
+    queryFn: async () => unwrap(await getKhatmaMembers(id)).data,
+  });
+}
+
+export function useKhatmaInvite(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["khatma", id, "invite"],
+    queryFn: async () => unwrap(await getKhatmaJoinCode(id)),
+    enabled,
+  });
+}
+
 export function useMyKhatmas<S extends "active" | "completed">(type: KhatmaType, status: S) {
   return useQuery({
     queryKey: ["khatmas", type, status],

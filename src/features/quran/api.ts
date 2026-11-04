@@ -1,5 +1,7 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMe } from "@/features/profile/api";
 import { request } from "@/data/http";
-import { backendSuccess } from "@/data/results";
+import { backendSuccess, unwrap } from "@/data/results";
 import type { KhatmaQuranProgress, PaginatedResponse, QuranJuz } from "@/data/contracts";
 export type { KhatmaQuranProgress, PaginatedResponse, QuranJuz } from "@/data/contracts";
 
@@ -21,3 +23,32 @@ async function action(path: string, body: unknown) {
   const result = await request<unknown>(path, { method: "POST", body });
   return result.error ? result : backendSuccess(null);
 }
+
+export function useKhatmaJuz(id: string) {
+  return useQuery({
+    queryKey: ["khatma", id, "juz"],
+    queryFn: async () => unwrap(await getKhatmaJuz(id)).data,
+  });
+}
+
+function useJuzMutation(id: string, action: "claim" | "complete") {
+  const queryClient = useQueryClient();
+  const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
+  const key = ["khatma", id, "juz"];
+  return useMutation({
+    mutationFn: async (juzNumber: number) => unwrap(await (action === "claim" ? claimJuz : completeJuz)(id, juzNumber)),
+    onMutate: async (juzNumber) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<QuranJuz[]>(key);
+      queryClient.setQueryData<QuranJuz[]>(key, (items) => items?.map((item) => item.juzNumber === juzNumber
+        ? { ...item, status: action === "claim" ? "claimed" : "completed", claimedBy: currentUserId }
+        : item));
+      return { previous };
+    },
+    onError: (_error, _juzNumber, context) => queryClient.setQueryData(key, context?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["khatma", id] }),
+  });
+}
+
+export const useClaimJuz = (id: string) => useJuzMutation(id, "claim");
+export const useCompleteJuz = (id: string) => useJuzMutation(id, "complete");
