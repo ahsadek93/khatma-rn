@@ -28,7 +28,7 @@ export default function ZikrKhatmaDetails() {
   }>();
   const progressQuery = useZikrProgress(id);
   const membersQuery = useKhatmaMembers(id);
-  const invite = useKhatmaInvite(id, status !== "completed");
+  const invite = useKhatmaInvite(id, status === "active");
   const progress = progressQuery.data ?? null;
   const members = membersQuery.data ?? [];
   const currentUserId = useMe((me) => me?.id ?? null).data ?? null;

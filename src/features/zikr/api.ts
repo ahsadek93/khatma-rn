@@ -47,7 +47,7 @@ export function useKhatmasZikrProgress(ids: string[]) {
   });
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ["khatmas", "zikr", "active"] });
-    void queryClient.invalidateQueries({ queryKey: ["khatma"] });
+    ids.forEach((id) => void queryClient.invalidateQueries({ queryKey: ["khatma", id, "progress"] }));
   };
   return { ...progress, refresh };
 }
