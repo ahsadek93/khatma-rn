@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "@/data/http";
 import { backendSuccess, unwrap } from "@/data/results";
 import type { BackendResult, ZikrKhatmaProgress } from "@/data/contracts";
@@ -27,11 +27,29 @@ async function action(path: string, body?: unknown, method = "POST") {
   return result.error ? result : backendSuccess(null);
 }
 
-export function useZikrProgress(id: string) {
-  return useQuery({
+const zikrProgressQuery = (id: string) =>
+  queryOptions({
     queryKey: ["khatma", id, "progress"],
     queryFn: async () => unwrap(await getKhatmaZikrProgress(id)),
   });
+
+export const useZikrProgress = (id: string) => useQuery(zikrProgressQuery(id));
+
+export function useKhatmasZikrProgress(ids: string[]) {
+  const queryClient = useQueryClient();
+  const progress = useQueries({
+    queries: ids.map(zikrProgressQuery),
+    combine: (results) => ({
+      data: results.map((r) => r.data),
+      isPending: results.some((r) => r.isPending),
+      isError: results.some((r) => r.isError),
+    }),
+  });
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: ["khatmas", "zikr", "active"] });
+    void queryClient.invalidateQueries({ queryKey: ["khatma"] });
+  };
+  return { ...progress, refresh };
 }
 
 function useZikrMutation<V>(id: string, run: (vars: V) => Promise<BackendResult<null>>) {

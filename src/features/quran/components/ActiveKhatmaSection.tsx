@@ -1,29 +1,17 @@
 import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
 import { useKhatmaRealtime } from "@/features/khatma/realtime";
-import { unwrap } from "@/data/results";
 import { i18n } from "@/i18n";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
-import { useQueries } from "@tanstack/react-query";
 import { useMyKhatmas } from "@/features/khatma/api";
-import { getKhatmaQuranProgress } from "../api";
+import { useKhatmasQuranProgress } from "../api";
 
 export function ActiveKhatmaSection() {
   const cardWidth = useWindowDimensions().width - 40;
   const list = useMyKhatmas("quran", "active");
   const active = list.data?.data ?? [];
-  const progress = useQueries({
-    queries: active.map(({ id }) => ({
-      queryKey: ["khatma", id, "progress"],
-      queryFn: async () => unwrap(await getKhatmaQuranProgress(id)),
-    })),
-    combine: (results) => ({
-      data: results.map((r) => r.data),
-      isPending: results.some((r) => r.isPending),
-      isError: results.some((r) => r.isError),
-    }),
-  });
+  const progress = useKhatmasQuranProgress(active.map(({ id }) => id));
   useKhatmaRealtime(active.map(({ id }) => id));
 
   const isLoading = list.isPending || progress.isPending;

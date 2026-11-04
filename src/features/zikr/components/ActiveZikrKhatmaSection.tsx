@@ -2,29 +2,16 @@ import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
 import { useKhatmaRealtime } from "@/features/khatma/realtime";
 import { useMyKhatmas } from "@/features/khatma/api";
-import { getKhatmaZikrProgress } from "@/features/zikr/api";
-import { unwrap } from "@/data/results";
+import { useKhatmasZikrProgress } from "@/features/zikr/api";
 import { i18n } from "@/i18n";
 import { router } from "expo-router";
-import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 
 export function ActiveZikrKhatmaSection() {
   const cardWidth = useWindowDimensions().width - 40;
-  const queryClient = useQueryClient();
   const list = useMyKhatmas("zikr", "active");
   const khatmas = list.data?.data ?? [];
-  const progress = useQueries({
-    queries: khatmas.map(({ id }) => ({
-      queryKey: ["khatma", id, "progress"],
-      queryFn: async () => unwrap(await getKhatmaZikrProgress(id)),
-    })),
-    combine: (results) => ({
-      data: results.map((r) => r.data),
-      isPending: results.some((r) => r.isPending),
-      isError: results.some((r) => r.isError),
-    }),
-  });
+  const progress = useKhatmasZikrProgress(khatmas.map(({ id }) => id));
   useKhatmaRealtime(khatmas.map(({ id }) => id));
 
   const isLoading = list.isPending || progress.isPending;
@@ -58,7 +45,7 @@ export function ActiveZikrKhatmaSection() {
       ) : hasError ? (
         <View className="mt-3 rounded-2xl border border-subtle-border bg-surface p-4">
           <AppText className="text-sm text-secondary-foreground">{i18n.t("zikrDashboardLoadError")}</AppText>
-          <Pressable accessibilityRole="button" onPress={() => { void queryClient.invalidateQueries({ queryKey: ["khatmas", "zikr", "active"] }); void queryClient.invalidateQueries({ queryKey: ["khatma"] }); }} className="mt-3 self-start">
+          <Pressable accessibilityRole="button" onPress={progress.refresh} className="mt-3 self-start">
             <AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText>
           </Pressable>
         </View>

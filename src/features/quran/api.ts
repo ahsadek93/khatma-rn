@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMe } from "@/features/profile/api";
 import { request } from "@/data/http";
 import { backendSuccess, unwrap } from "@/data/results";
@@ -28,6 +28,20 @@ export function useKhatmaJuz(id: string) {
   return useQuery({
     queryKey: ["khatma", id, "juz"],
     queryFn: async () => unwrap(await getKhatmaJuz(id)).data,
+  });
+}
+
+export function useKhatmasQuranProgress(ids: string[]) {
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["khatma", id, "progress"],
+      queryFn: async () => unwrap(await getKhatmaQuranProgress(id)),
+    })),
+    combine: (results) => ({
+      data: results.map((r) => r.data),
+      isPending: results.some((r) => r.isPending),
+      isError: results.some((r) => r.isError),
+    }),
   });
 }
 
