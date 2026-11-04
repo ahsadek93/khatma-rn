@@ -11,6 +11,7 @@ export function useMe<T = Me | null>(select?: (me: Me | null) => T) {
     queryKey: ["me"],
     queryFn: async () => (await getSession()) ? unwrap(await request<Me>("/users/me")) : null,
     select,
+    retry: false,
   });
 }
 

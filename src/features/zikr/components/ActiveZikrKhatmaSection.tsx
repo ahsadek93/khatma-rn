@@ -15,7 +15,7 @@ export function ActiveZikrKhatmaSection() {
   useKhatmaRealtime(khatmas.map(({ id }) => id));
 
   const isLoading = list.isPending || progress.isPending;
-  const hasError = list.isError || progress.isError;
+  const hasError = list.isLoadingError || progress.isError;
   const active = khatmas.map((khatma, i) => ({ ...khatma, progress: progress.data[i]! }));
 
   return (

@@ -42,7 +42,7 @@ export function useKhatmasZikrProgress(ids: string[]) {
     combine: (results) => ({
       data: results.map((r) => r.data),
       isPending: results.some((r) => r.isPending),
-      isError: results.some((r) => r.isError),
+      isError: results.some((r) => r.isLoadingError),
     }),
   });
   const refresh = () => {

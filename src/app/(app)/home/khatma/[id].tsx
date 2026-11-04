@@ -36,7 +36,7 @@ export default function KhatmaDetails() {
   const joinCodeError = invite.isError || (invite.isSuccess && !invite.data);
   useKhatmaRealtime(status === "active" ? [id] : []);
   const isLoading = juzQuery.isPending || membersQuery.isPending;
-  const hasError = juzQuery.isError || membersQuery.isError;
+  const hasError = juzQuery.isLoadingError || membersQuery.isLoadingError;
   const [shareError, setShareError] = useState(false);
   const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
   const [selectedJuz, setSelectedJuz] = useState<QuranJuz | null>(null);

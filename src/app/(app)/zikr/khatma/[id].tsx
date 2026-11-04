@@ -36,7 +36,7 @@ export default function ZikrKhatmaDetails() {
   const joinCodeError = invite.isError || (invite.isSuccess && !invite.data);
   const [shareError, setShareError] = useState(false);
   const isLoading = progressQuery.isPending || membersQuery.isPending;
-  const loadError = progressQuery.isError || membersQuery.isError;
+  const loadError = progressQuery.isLoadingError || membersQuery.isLoadingError;
   const [actionError, setActionError] = useState("");
   const [claimAmount, setClaimAmount] = useState("");
   const [phraseDraft, setPhraseDraft] = useState("");
@@ -48,12 +48,12 @@ export default function ZikrKhatmaDetails() {
   useKhatmaRealtime(status === "completed" ? [] : [id]);
 
   useEffect(() => {
-    if (!progress || initialized.current) return;
+    if (!progress || initialized.current || progressQuery.isFetching) return;
     initialized.current = true;
     setClaimAmount(String(progress.myPendingCount || ""));
     setPhraseDraft(progress.phrase);
     setGoalDraft(String(progress.goalCount));
-  }, [progress]);
+  }, [progress, progressQuery.isFetching]);
 
   const claim = useSetZikrClaim(id);
   const release = useReleaseZikrClaim(id);
