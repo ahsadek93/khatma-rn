@@ -8,6 +8,12 @@ export function backendFailure<T = never>(error: BackendError): BackendResult<T>
   return { data: null, error };
 }
 
+// Throws the BackendError itself (not an Error) so `query.error.code` works.
+export function unwrap<T>(result: BackendResult<T>): T {
+  if (result.error) throw result.error;
+  return result.data;
+}
+
 export function unexpectedBackendError(error: unknown): BackendError {
   return {
     code: "unexpected",
