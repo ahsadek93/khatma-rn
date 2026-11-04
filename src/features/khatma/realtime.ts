@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useCallback } from "react";
+import { useFocusEffect } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSession, baseUrl } from "@/data/http";
 import type { KhatmaRealtimeEvent } from "@/data/contracts";
@@ -45,7 +46,9 @@ async function subscribe(khatmaId: string, listener: (event: KhatmaRealtimeEvent
 export function useKhatmaRealtime(ids: string[]) {
   const queryClient = useQueryClient();
   const key = ids.join(",");
-  useEffect(() => {
+  // shortcut: a stream that drops while the screen stays focused (app foregrounded without navigating) stays dead,
+  // and any id-set change reconnects all streams; reconnect in xhr.onloadend when not cancelled if this matters.
+  useFocusEffect(useCallback(() => {
     const unsubscribes = (key ? key.split(",") : []).map((id) =>
       subscribeToKhatmaUpdates(id, (event) => {
         if (event === "connected") return;
@@ -56,5 +59,5 @@ export function useKhatmaRealtime(ids: string[]) {
       }),
     );
     return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
-  }, [key, queryClient]);
+  }, [key, queryClient]));
 }
