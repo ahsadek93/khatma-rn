@@ -1,36 +1,14 @@
 import { queryOptions, useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "@/data/http";
-import { backendSuccess, unwrap } from "@/data/results";
+import { unwrap } from "@/data/results";
 import type { BackendResult, ZikrKhatmaProgress } from "@/data/contracts";
-export type { ZikrKhatmaProgress } from "@/data/contracts";
 
 const idPath = (id: string) => encodeURIComponent(id);
-
-export async function getKhatmaZikrProgress(khatmaId: string) {
-  return request<ZikrKhatmaProgress>(`/zikr/khatmas/${idPath(khatmaId)}/progress`);
-}
-
-export const setZikrClaim = (khatmaId: string, amount: number) =>
-  action(`/zikr/khatmas/${idPath(khatmaId)}/claim`, { amount });
-
-export const releaseZikrClaim = (khatmaId: string) =>
-  action(`/zikr/khatmas/${idPath(khatmaId)}/release`);
-
-export const completeZikrClaim = (khatmaId: string) =>
-  action(`/zikr/khatmas/${idPath(khatmaId)}/complete`);
-
-export const updateZikrKhatmaSettings = (khatmaId: string, phrase: string, goalCount: number) =>
-  action(`/zikr/khatmas/${idPath(khatmaId)}/settings`, { phrase, goalCount }, "PATCH");
-
-async function action(path: string, body?: unknown, method = "POST") {
-  const result = await request<unknown>(path, { method, body });
-  return result.error ? result : backendSuccess(null);
-}
 
 const zikrProgressQuery = (id: string) =>
   queryOptions({
     queryKey: ["khatma", id, "progress"],
-    queryFn: async () => unwrap(await getKhatmaZikrProgress(id)),
+    queryFn: async () => unwrap(await request<ZikrKhatmaProgress>(`/zikr/khatmas/${idPath(id)}/progress`)),
   });
 
 export const useZikrProgress = (id: string) => useQuery(zikrProgressQuery(id));
@@ -52,7 +30,7 @@ export function useKhatmasZikrProgress(ids: string[]) {
   return { ...progress, refresh };
 }
 
-function useZikrMutation<V>(id: string, run: (vars: V) => Promise<BackendResult<null>>, alsoKhatmas = false) {
+function useZikrMutation<V>(id: string, run: (vars: V) => Promise<BackendResult<unknown>>, alsoKhatmas = false) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: V) => unwrap(await run(vars)),
@@ -63,8 +41,11 @@ function useZikrMutation<V>(id: string, run: (vars: V) => Promise<BackendResult<
   });
 }
 
-export const useSetZikrClaim = (id: string) => useZikrMutation(id, (amount: number) => setZikrClaim(id, amount));
-export const useReleaseZikrClaim = (id: string) => useZikrMutation(id, () => releaseZikrClaim(id));
-export const useCompleteZikrClaim = (id: string) => useZikrMutation(id, () => completeZikrClaim(id), true);
+const send = (id: string, path: string, body?: unknown, method = "POST") =>
+  request<unknown>(`/zikr/khatmas/${idPath(id)}/${path}`, { method, body });
+
+export const useSetZikrClaim = (id: string) => useZikrMutation(id, (amount: number) => send(id, "claim", { amount }));
+export const useReleaseZikrClaim = (id: string) => useZikrMutation(id, () => send(id, "release"));
+export const useCompleteZikrClaim = (id: string) => useZikrMutation(id, () => send(id, "complete"), true);
 export const useUpdateZikrSettings = (id: string) =>
-  useZikrMutation(id, ({ phrase, goal }: { phrase: string; goal: number }) => updateZikrKhatmaSettings(id, phrase, goal));
+  useZikrMutation(id, ({ phrase, goal }: { phrase: string; goal: number }) => send(id, "settings", { phrase, goalCount: goal }, "PATCH"));

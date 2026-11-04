@@ -31,7 +31,7 @@ export default function ZikrKhatmaDetails() {
   const invite = useKhatmaInvite(id, status === "active");
   const progress = progressQuery.data ?? null;
   const members = membersQuery.data ?? [];
-  const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
+  const currentUserId = useMe().data?.id ?? null;
   const joinCode = invite.data ?? null;
   const joinCodeError = invite.isError || (invite.isSuccess && !invite.data);
   const [shareError, setShareError] = useState(false);

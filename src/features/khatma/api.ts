@@ -1,31 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "@/data/http";
-import { backendSuccess, unwrap } from "@/data/results";
+import { unwrap } from "@/data/results";
 import type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType, PaginatedResponse } from "@/data/contracts";
-export type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType, PaginatedResponse } from "@/data/contracts";
 
 const idPath = (id: string) => encodeURIComponent(id);
-
-export async function getKhatmaMembers(khatmaId: string) {
-  return request<PaginatedResponse<KhatmaMember>>(`/khatmas/${idPath(khatmaId)}/members`);
-}
-
-export async function getKhatmaJoinCode(khatmaId: string) {
-  const result = await request<{ joinCode: string | null }>(`/khatmas/${idPath(khatmaId)}/invite`);
-  return result.error ? result : backendSuccess(result.data.joinCode);
-}
 
 export function useKhatmaMembers(id: string) {
   return useQuery({
     queryKey: ["khatma", id, "members"],
-    queryFn: async () => unwrap(await getKhatmaMembers(id)).data,
+    queryFn: async () => unwrap(await request<PaginatedResponse<KhatmaMember>>(`/khatmas/${idPath(id)}/members`)).data,
   });
 }
 
 export function useKhatmaInvite(id: string, enabled: boolean) {
   return useQuery({
     queryKey: ["khatma", id, "invite"],
-    queryFn: async () => unwrap(await getKhatmaJoinCode(id)),
+    queryFn: async () => (unwrap(await request<{ joinCode: string | null }>(`/khatmas/${idPath(id)}/invite`))).joinCode,
     enabled,
   });
 }

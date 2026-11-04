@@ -2,7 +2,8 @@ import { AppText } from "@/components/AppText";
 import { useKhatmaRealtime } from "@/features/khatma/realtime";
 import { useMe } from "@/features/profile/api";
 import { useKhatmaInvite, useKhatmaMembers } from "@/features/khatma/api";
-import { useClaimJuz, useCompleteJuz, useKhatmaJuz, type QuranJuz } from "@/features/quran/api";
+import { useClaimJuz, useCompleteJuz, useKhatmaJuz } from "@/features/quran/api";
+import type { QuranJuz } from "@/data/contracts";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router, useLocalSearchParams } from "expo-router";
@@ -38,7 +39,7 @@ export default function KhatmaDetails() {
   const isLoading = juzQuery.isPending || membersQuery.isPending;
   const hasError = juzQuery.isLoadingError || membersQuery.isLoadingError;
   const [shareError, setShareError] = useState(false);
-  const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
+  const currentUserId = useMe().data?.id ?? null;
   const [selectedJuz, setSelectedJuz] = useState<QuranJuz | null>(null);
   const [showMembers, setShowMembers] = useState(false);
   const [actionError, setActionError] = useState(false);

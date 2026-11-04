@@ -3,14 +3,11 @@ import { getSession, request } from "@/data/http";
 import { unwrap } from "@/data/results";
 import type { UserProfile } from "@/data/contracts";
 
-type Me = UserProfile;
-
 // null = no session (index.tsx redirects to welcome).
-export function useMe<T = Me | null>(select?: (me: Me | null) => T) {
+export function useMe() {
   return useQuery({
     queryKey: ["me"],
-    queryFn: async () => (await getSession()) ? unwrap(await request<Me>("/users/me")) : null,
-    select,
+    queryFn: async () => (await getSession()) ? unwrap(await request<UserProfile>("/users/me")) : null,
     retry: false,
   });
 }
