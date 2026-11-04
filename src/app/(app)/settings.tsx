@@ -1,5 +1,5 @@
 import { AppText } from "@/components/AppText";
-import { saveCurrentDisplayName, useMe } from "@/features/profile/api";
+import { useMe, useSaveDisplayName } from "@/features/profile/api";
 import { signOut } from "@/features/auth/api";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
@@ -10,7 +10,7 @@ import { Pressable, ScrollView, TextInput, View } from "react-native";
 export default function Settings() {
   const { theme, setTheme } = useSettings();
   const [draftName, setDraftName] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const { mutateAsync, isPending: saving } = useSaveDisplayName();
   const [signingOut, setSigningOut] = useState(false);
   const [message, setMessage] = useState("");
   const me = useMe();
@@ -25,15 +25,12 @@ export default function Settings() {
       setMessage(i18n.t("displayNameInvalid"));
       return;
     }
-    setSaving(true);
     try {
-      const { error } = await saveCurrentDisplayName(name);
-      setMessage(i18n.t(error ? "profileSaveError" : "profileSaved"));
-      if (!error) setDraftName(name);
+      await mutateAsync(name);
+      setMessage(i18n.t("profileSaved"));
+      setDraftName(null);
     } catch {
       setMessage(i18n.t("profileSaveError"));
-    } finally {
-      setSaving(false);
     }
   }
 

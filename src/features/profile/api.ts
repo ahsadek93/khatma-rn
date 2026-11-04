@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSession, request } from "@/data/http";
-import { backendSuccess, unwrap } from "@/data/results";
+import { unwrap } from "@/data/results";
 import type { UserProfile } from "@/data/contracts";
 
 type Me = UserProfile;
@@ -14,7 +14,12 @@ export function useMe<T = Me | null>(select?: (me: Me | null) => T) {
   });
 }
 
-export async function saveCurrentDisplayName(displayName: string) {
-  const result = await request<unknown>("/users/me", { method: "PATCH", body: { displayName } });
-  return result.error ? result : backendSuccess(null);
+export function useSaveDisplayName() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (displayName: string) => {
+      unwrap(await request<unknown>("/users/me", { method: "PATCH", body: { displayName } }));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["me"] }),
+  });
 }
