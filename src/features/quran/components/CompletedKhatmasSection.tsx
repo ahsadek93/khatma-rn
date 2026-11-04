@@ -2,34 +2,13 @@ import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
 import { i18n } from "@/i18n";
 import { Pressable, View } from "react-native";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { getMyCompletedKhatmas, type CompletedKhatma } from "@/features/khatma/api";
+import { router } from "expo-router";
+import { useMyKhatmas } from "@/features/khatma/api";
 
 export function CompletedKhatmasSection() {
-  const [khatmas, setKhatmas] = useState<CompletedKhatma[]>([]);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-
-  useFocusEffect(useCallback(() => {
-    let isCurrent = true;
-    setHasError(false);
-    void getMyCompletedKhatmas("quran").then(({ data, error }) => {
-      if (!isCurrent) return;
-      if (error || !data) setHasError(true);
-      else {
-        setKhatmas(data.data);
-        setTotal(data.pagination.total);
-      }
-      setIsLoading(false);
-    }).catch(() => {
-      if (!isCurrent) return;
-      setHasError(true);
-      setIsLoading(false);
-    });
-    return () => { isCurrent = false; };
-  }, []));
+  const { data, isPending: isLoading, isError: hasError } = useMyKhatmas("quran", "completed");
+  const khatmas = data?.data ?? [];
+  const total = data?.pagination.total ?? 0;
 
   return (
     <View className="mt-7">

@@ -1,5 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { request } from "@/data/http";
-import { backendSuccess } from "@/data/results";
+import { backendSuccess, unwrap } from "@/data/results";
 import type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType, PaginatedResponse } from "@/data/contracts";
 export type { CompletedKhatma, KhatmaMember, KhatmaSummary, KhatmaType, PaginatedResponse } from "@/data/contracts";
 
@@ -26,10 +27,10 @@ export async function getKhatmaJoinCode(khatmaId: string) {
   return result.error ? result : backendSuccess(result.data.joinCode);
 }
 
-export async function getMyActiveKhatmas(type: KhatmaType = "quran") {
-  return request<PaginatedResponse<KhatmaSummary>>(`/khatmas?status=active&type=${type}`);
-}
-
-export async function getMyCompletedKhatmas(type: KhatmaType = "quran") {
-  return request<PaginatedResponse<CompletedKhatma>>(`/khatmas?status=completed&type=${type}`);
+export function useMyKhatmas<S extends "active" | "completed">(type: KhatmaType, status: S) {
+  return useQuery({
+    queryKey: ["khatmas", type, status],
+    queryFn: async () =>
+      unwrap(await request<PaginatedResponse<S extends "active" ? KhatmaSummary : CompletedKhatma>>(`/khatmas?status=${status}&type=${type}`)),
+  });
 }
