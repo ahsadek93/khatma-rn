@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getSession, baseUrl } from "@/data/http";
 import type { KhatmaRealtimeEvent } from "@/data/contracts";
 
@@ -38,4 +40,21 @@ async function subscribe(khatmaId: string, listener: (event: KhatmaRealtimeEvent
     }
   };
   xhr.send();
+}
+
+export function useKhatmaRealtime(ids: string[]) {
+  const queryClient = useQueryClient();
+  const key = ids.join(",");
+  useEffect(() => {
+    const unsubscribes = (key ? key.split(",") : []).map((id) =>
+      subscribeToKhatmaUpdates(id, (event) => {
+        if (event === "connected") return;
+        void queryClient.invalidateQueries({ queryKey: ["khatma", id] });
+        if (event === "completed" || event === "membersChanged") {
+          void queryClient.invalidateQueries({ queryKey: ["khatmas"] });
+        }
+      }),
+    );
+    return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+  }, [key, queryClient]);
 }
