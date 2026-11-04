@@ -62,7 +62,7 @@ function useJuzMutation(id: string, action: "claim" | "complete") {
     onError: (_error, _juzNumber, context) => queryClient.setQueryData(key, context?.previous),
     onSettled: () => {
       if (action === "complete") void queryClient.invalidateQueries({ queryKey: ["khatmas"] });
-      return queryClient.invalidateQueries({ queryKey: ["khatma", id] });
+      void queryClient.invalidateQueries({ queryKey: ["khatma", id] });
     },
   });
 }
