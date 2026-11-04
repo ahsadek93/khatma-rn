@@ -1,6 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
-import { getCurrentUser } from "@/features/auth/api";
+import { useMe } from "@/features/profile/api";
 import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import {
   completeZikrClaim,
@@ -29,7 +29,7 @@ export default function ZikrKhatmaDetails() {
   }>();
   const [progress, setProgress] = useState<ZikrKhatmaProgress | null>(null);
   const [members, setMembers] = useState<KhatmaMember[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
   const [currentStatus, setCurrentStatus] = useState<KhatmaStatus>(status === "completed" ? "completed" : "active");
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [joinCodeError, setJoinCodeError] = useState(false);
@@ -51,20 +51,18 @@ export default function ZikrKhatmaDetails() {
     let initialized = false;
     const load = async () => {
       try {
-        const [progressResult, membersResult, userResult] = await Promise.all([
+        const [progressResult, membersResult] = await Promise.all([
           getKhatmaZikrProgress(id),
           getKhatmaMembers(id),
-          getCurrentUser(),
         ]);
         if (!current) return;
-        if (progressResult.error || membersResult.error || userResult.error || !userResult.data) {
+        if (progressResult.error || membersResult.error) {
           setLoadError(true);
           setIsLoading(false);
           return;
         }
         setProgress(progressResult.data);
         setMembers(membersResult.data.data);
-        setCurrentUserId(userResult.data.id);
         setCurrentStatus(status === "completed" || progressResult.data.completedCount >= progressResult.data.goalCount ? "completed" : "active");
         setLoadError(false);
         if (!initialized) {

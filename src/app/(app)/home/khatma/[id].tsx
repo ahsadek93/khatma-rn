@@ -1,6 +1,6 @@
 import { AppText } from "@/components/AppText";
 import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
-import { getCurrentUser } from "@/features/auth/api";
+import { useMe } from "@/features/profile/api";
 import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
 import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
 import { i18n } from "@/i18n";
@@ -34,7 +34,7 @@ export default function KhatmaDetails() {
   const [shareError, setShareError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const currentUserId = useMe((me) => me?.id ?? null).data ?? null;
   const [selectedJuz, setSelectedJuz] = useState<QuranJuz | null>(null);
   const [showMembers, setShowMembers] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,15 +56,13 @@ export default function KhatmaDetails() {
     void Promise.all([
       getKhatmaJuz(id),
       getKhatmaMembers(id),
-      getCurrentUser(),
       status === "active" ? getKhatmaJoinCode(id) : Promise.resolve(null),
-    ]).then(([juzResult, membersResult, userResult, joinCodeResult]) => {
+    ]).then(([juzResult, membersResult, joinCodeResult]) => {
       if (!current) return;
       if (juzResult.error || membersResult.error) setHasError(true);
       else {
         setJuz(juzResult.data.data);
         setMembers(membersResult.data.data);
-        setCurrentUserId(userResult.error ? null : userResult.data?.id ?? null);
       }
       if (status === "active") {
         if (joinCodeResult?.error || !joinCodeResult?.data) setJoinCodeError(true);
