@@ -52,16 +52,19 @@ export function useKhatmasZikrProgress(ids: string[]) {
   return { ...progress, refresh };
 }
 
-function useZikrMutation<V>(id: string, run: (vars: V) => Promise<BackendResult<null>>) {
+function useZikrMutation<V>(id: string, run: (vars: V) => Promise<BackendResult<null>>, alsoKhatmas = false) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: V) => unwrap(await run(vars)),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["khatma", id] }),
+    onSettled: () => {
+      if (alsoKhatmas) void queryClient.invalidateQueries({ queryKey: ["khatmas"] });
+      return queryClient.invalidateQueries({ queryKey: ["khatma", id] });
+    },
   });
 }
 
 export const useSetZikrClaim = (id: string) => useZikrMutation(id, (amount: number) => setZikrClaim(id, amount));
 export const useReleaseZikrClaim = (id: string) => useZikrMutation(id, () => releaseZikrClaim(id));
-export const useCompleteZikrClaim = (id: string) => useZikrMutation(id, () => completeZikrClaim(id));
+export const useCompleteZikrClaim = (id: string) => useZikrMutation(id, () => completeZikrClaim(id), true);
 export const useUpdateZikrSettings = (id: string) =>
   useZikrMutation(id, ({ phrase, goal }: { phrase: string; goal: number }) => updateZikrKhatmaSettings(id, phrase, goal));
