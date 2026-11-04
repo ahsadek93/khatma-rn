@@ -1,5 +1,5 @@
 import { AppText } from "@/components/AppText";
-import { joinKhatmaByCode } from "@/features/khatma/api";
+import { useJoinKhatma } from "@/features/khatma/api";
 import { i18n } from "@/i18n";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -8,25 +8,18 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View 
 export default function JoinKhatmaScreen() {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
+  const { mutateAsync, isPending: isJoining } = useJoinKhatma();
   const normalizedCode = code;
   const isValidCode = /^[0-9A-F]{1,24}$/.test(normalizedCode);
 
   async function handleJoin() {
     if (!isValidCode || isJoining) return;
     setError(false);
-    setIsJoining(true);
     try {
-      const result = await joinKhatmaByCode(normalizedCode);
-      if (result.error) {
-        setError(true);
-        return;
-      }
-      router.replace(result.data.type === "zikr" ? "/(app)/zikr" : "/(app)/home");
+      const joined = await mutateAsync(normalizedCode);
+      router.replace(joined.type === "zikr" ? "/(app)/zikr" : "/(app)/home");
     } catch {
       setError(true);
-    } finally {
-      setIsJoining(false);
     }
   }
 

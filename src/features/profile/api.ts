@@ -1,13 +1,23 @@
-import { request } from "@/data/http";
-import { backendSuccess } from "@/data/results";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getSession, request } from "@/data/http";
+import { unwrap } from "@/data/results";
 import type { UserProfile } from "@/data/contracts";
 
-export async function getCurrentProfile() {
-  const result = await request<UserProfile>("/users/me");
-  return result.error ? result : backendSuccess({ displayName: result.data.displayName, email: result.data.email });
+// null = no session (index.tsx redirects to welcome).
+export function useMe() {
+  return useQuery({
+    queryKey: ["me"],
+    queryFn: async () => (await getSession()) ? unwrap(await request<UserProfile>("/users/me")) : null,
+    retry: false,
+  });
 }
 
-export async function saveCurrentDisplayName(displayName: string) {
-  const result = await request<unknown>("/users/me", { method: "PATCH", body: { displayName } });
-  return result.error ? result : backendSuccess(null);
+export function useSaveDisplayName() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (displayName: string) => {
+      unwrap(await request<unknown>("/users/me", { method: "PATCH", body: { displayName } }));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["me"] }),
+  });
 }

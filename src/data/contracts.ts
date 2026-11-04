@@ -10,7 +10,7 @@ export type PaginatedResponse<T> = {
 };
 
 export type AuthUser = { id: string; email: string | null };
-export type UserProfile = { displayName: string; email: string };
+export type UserProfile = { id: string; displayName: string; email: string };
 export type KhatmaType = "quran" | "zikr";
 export type KhatmaSummary = { id: string; name: string; type: KhatmaType; memberCount: number };
 export type CompletedKhatma = { id: string; name: string; type: KhatmaType; completedAt: string };

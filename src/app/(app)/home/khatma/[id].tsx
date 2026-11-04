@@ -1,12 +1,13 @@
 import { AppText } from "@/components/AppText";
-import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
-import { getCurrentUser } from "@/features/auth/api";
-import { getKhatmaJoinCode, getKhatmaMembers, type KhatmaMember } from "@/features/khatma/api";
-import { claimJuz, completeJuz, getKhatmaJuz, type QuranJuz } from "@/features/quran/api";
+import { useKhatmaRealtime } from "@/features/khatma/realtime";
+import { useMe } from "@/features/profile/api";
+import { useKhatmaInvite, useKhatmaMembers } from "@/features/khatma/api";
+import { useClaimJuz, useCompleteJuz, useKhatmaJuz } from "@/features/quran/api";
+import type { QuranJuz } from "@/data/contracts";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Modal, Pressable, ScrollView, Share, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -27,101 +28,41 @@ export default function KhatmaDetails() {
     status: "active" | "completed";
     completedAt?: string;
   }>();
-  const [juz, setJuz] = useState<QuranJuz[]>([]);
-  const [members, setMembers] = useState<KhatmaMember[]>([]);
-  const [joinCode, setJoinCode] = useState<string | null>(null);
-  const [joinCodeError, setJoinCodeError] = useState(false);
+  const juzQuery = useKhatmaJuz(id);
+  const membersQuery = useKhatmaMembers(id);
+  const invite = useKhatmaInvite(id, status === "active");
+  const juz = juzQuery.data ?? [];
+  const members = membersQuery.data ?? [];
+  const joinCode = invite.data ?? null;
+  const joinCodeError = invite.isError || (invite.isSuccess && !invite.data);
+  useKhatmaRealtime(status === "active" ? [id] : []);
+  const isLoading = juzQuery.isPending || membersQuery.isPending;
+  const hasError = juzQuery.isLoadingError || membersQuery.isLoadingError;
   const [shareError, setShareError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const currentUserId = useMe().data?.id ?? null;
   const [selectedJuz, setSelectedJuz] = useState<QuranJuz | null>(null);
   const [showMembers, setShowMembers] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [actionError, setActionError] = useState(false);
   const [showMyJuzOnly, setShowMyJuzOnly] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(status);
   const sheetY = useSharedValue(0);
   const backdropOpacity = useSharedValue(0);
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.get() }] }));
   const backdropStyle = useAnimatedStyle(() => ({ opacity: backdropOpacity.get() }));
   const completedCount = juz.filter((item) => item.status === "completed").length;
   const visibleJuz = showMyJuzOnly ? juz.filter((item) => item.status !== "free" && item.claimedBy === currentUserId) : juz;
-  const isCompleted = currentStatus === "completed";
+  const isCompleted = status === "completed" || (juz.length === 30 && completedCount === 30);
 
-  useFocusEffect(useCallback(() => {
-    let current = true;
-    setIsLoading(true);
-    setHasError(false);
-    void Promise.all([
-      getKhatmaJuz(id),
-      getKhatmaMembers(id),
-      getCurrentUser(),
-      status === "active" ? getKhatmaJoinCode(id) : Promise.resolve(null),
-    ]).then(([juzResult, membersResult, userResult, joinCodeResult]) => {
-      if (!current) return;
-      if (juzResult.error || membersResult.error) setHasError(true);
-      else {
-        setJuz(juzResult.data.data);
-        setMembers(membersResult.data.data);
-        setCurrentUserId(userResult.error ? null : userResult.data?.id ?? null);
-      }
-      if (status === "active") {
-        if (joinCodeResult?.error || !joinCodeResult?.data) setJoinCodeError(true);
-        else setJoinCode(joinCodeResult.data);
-      }
-      setIsLoading(false);
-    }).catch(() => {
-      if (!current) return;
-      setHasError(true);
-      setIsLoading(false);
-    });
+  const claim = useClaimJuz(id);
+  const complete = useCompleteJuz(id);
+  const isSaving = claim.isPending || complete.isPending;
 
-    const refreshLiveDetails = () => {
-      void Promise.all([getKhatmaJuz(id), getKhatmaMembers(id)]).then(([juzResult, membersResult]) => {
-        if (!current) return;
-        if (juzResult.error || membersResult.error) {
-          setHasError(true);
-          return;
-        }
-        setJuz(juzResult.data.data);
-        setMembers(membersResult.data.data);
-        setHasError(false);
-      }).catch(() => {
-        if (current) setHasError(true);
-      });
-    };
-
-    const unsubscribe = subscribeToKhatmaUpdates(id, (event) => {
-      if (event === "completed") setCurrentStatus("completed");
-      else if (event !== "connected") refreshLiveDetails();
-    });
-
-    return () => {
-      current = false;
-      unsubscribe();
-    };
-  }, [id, status]));
-
-  const handleJuzAction = async (action: "claim" | "complete") => {
+  const handleJuzAction = (action: "claim" | "complete") => {
     if (!selectedJuz) return;
-    setIsSaving(true);
     setActionError(false);
-    const result = action === "claim"
-      ? await claimJuz(id, selectedJuz.juzNumber)
-      : await completeJuz(id, selectedJuz.juzNumber);
-    if (result.error) {
-      setActionError(true);
-      setIsSaving(false);
-      return;
-    }
-    setJuz((items) => items.map((item) => item.juzNumber === selectedJuz.juzNumber
-      ? { ...item, status: action === "claim" ? "claimed" : "completed", claimedBy: currentUserId }
-      : item));
-    closeSheet();
-    setIsSaving(false);
-    const refreshed = await getKhatmaJuz(id);
-    if (!refreshed.error) setJuz(refreshed.data.data);
+    (action === "claim" ? claim : complete).mutate(selectedJuz.juzNumber, {
+      onSuccess: () => closeSheet(),
+      onError: () => setActionError(true),
+    });
   };
 
   const handleShare = () => {
@@ -294,8 +235,8 @@ export default function KhatmaDetails() {
                     ? selectedJuz.claimedBy === currentUserId ? "juzCompletedByYou" : "juzCompletedByName"
                     : "juzClaimedByName", { name: selectedJuz.claimedByName ?? i18n.t("unknownKhatmaMember") })}</AppText>
               {actionError ? <AppText accessibilityRole="alert" className="mt-3 text-sm text-red-500">{i18n.t("juzActionError")}</AppText> : null}
-              {!isCompleted && selectedJuz.status === "free" ? <Pressable disabled={isSaving} onPress={() => void handleJuzAction("claim")} accessibilityRole="button" className="mt-5 items-center rounded-xl bg-primary px-4 py-3"><AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "claimJuz")}</AppText></Pressable> : null}
-              {!isCompleted && selectedJuz.status === "claimed" && selectedJuz.claimedBy === currentUserId ? <Pressable disabled={isSaving} onPress={() => void handleJuzAction("complete")} accessibilityRole="button" className="mt-5 items-center rounded-xl bg-primary px-4 py-3"><AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "completeJuz")}</AppText></Pressable> : null}
+              {!isCompleted && selectedJuz.status === "free" ? <Pressable disabled={isSaving} onPress={() => handleJuzAction("claim")} accessibilityRole="button" className="mt-5 items-center rounded-xl bg-primary px-4 py-3"><AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "claimJuz")}</AppText></Pressable> : null}
+              {!isCompleted && selectedJuz.status === "claimed" && selectedJuz.claimedBy === currentUserId ? <Pressable disabled={isSaving} onPress={() => handleJuzAction("complete")} accessibilityRole="button" className="mt-5 items-center rounded-xl bg-primary px-4 py-3"><AppText className="font-bold text-background">{i18n.t(isSaving ? "loading" : "completeJuz")}</AppText></Pressable> : null}
               <Pressable disabled={isSaving} onPress={closeSheet} accessibilityRole="button" className="mt-3 items-center rounded-xl bg-surface px-4 py-3"><AppText className="font-bold text-foreground">{i18n.t("close")}</AppText></Pressable>
             </> : null}
           </View>

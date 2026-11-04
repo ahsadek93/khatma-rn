@@ -1,88 +1,22 @@
 import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
-import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
+import { useKhatmaRealtime } from "@/features/khatma/realtime";
 import { i18n } from "@/i18n";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
-import { useCallback, useState } from "react";
-import { router, useFocusEffect } from "expo-router";
-import { getMyActiveKhatmas, type KhatmaSummary } from "@/features/khatma/api";
-import { getKhatmaQuranProgress } from "../api";
-
-type Khatma = KhatmaSummary & { completedJuz: number; selectedJuz: number[] };
+import { router } from "expo-router";
+import { useMyKhatmas } from "@/features/khatma/api";
+import { useKhatmasQuranProgress } from "../api";
 
 export function ActiveKhatmaSection() {
-  const [khatmas, setKhatmas] = useState<Khatma[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
   const cardWidth = useWindowDimensions().width - 40;
+  const list = useMyKhatmas("quran", "active");
+  const active = list.data?.data ?? [];
+  const progress = useKhatmasQuranProgress(active.map(({ id }) => id));
+  useKhatmaRealtime(active.map(({ id }) => id));
 
-  const loadKhatmas = useCallback(() => {
-    let isCurrent = true;
-    const subscriptions = new Map<string, () => void>();
-    setIsLoading(true);
-    setHasError(false);
-    const load = () => {
-      void (async () => {
-      const { data: activePage, error } = await getMyActiveKhatmas("quran");
-      if (!isCurrent) return;
-      if (error) {
-        setHasError(true);
-        setIsLoading(false);
-        return;
-      }
-      const active = activePage.data;
-      const progressResults = await Promise.all(active.map(async (khatma) => ({
-        khatma,
-        result: await getKhatmaQuranProgress(khatma.id),
-      })));
-      if (!isCurrent) return;
-      if (progressResults.some(({ result }) => result.error)) {
-        setHasError(true);
-        setIsLoading(false);
-        return;
-      }
-      const nextKhatmas = progressResults.map(({ khatma, result }) => ({ ...khatma, ...result.data! }));
-      setKhatmas(nextKhatmas);
-      const activeIds = new Set(nextKhatmas.map((khatma) => khatma.id));
-      for (const [id, unsubscribe] of subscriptions) {
-        if (!activeIds.has(id)) {
-          unsubscribe();
-          subscriptions.delete(id);
-        }
-      }
-      for (const khatma of nextKhatmas) {
-        if (!subscriptions.has(khatma.id)) {
-          subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, (event) => {
-            if (event === "completed" || event === "membersChanged") load();
-            if (event === "progressChanged") {
-              void getKhatmaQuranProgress(khatma.id).then(({ data, error: progressError }) => {
-                if (!isCurrent) return;
-                if (progressError || !data) {
-                  setHasError(true);
-                  return;
-                }
-                setKhatmas((current) => current.map((item) => item.id === khatma.id ? { ...item, ...data } : item));
-              }).catch(() => { if (isCurrent) setHasError(true); });
-            }
-          }));
-        }
-      }
-      setHasError(false);
-      setIsLoading(false);
-      })().catch(() => {
-        if (!isCurrent) return;
-        setHasError(true);
-        setIsLoading(false);
-      });
-    };
-    load();
-    return () => {
-      isCurrent = false;
-      for (const unsubscribe of subscriptions.values()) unsubscribe();
-    };
-  }, []);
-
-  useFocusEffect(loadKhatmas);
+  const isLoading = list.isPending || progress.isPending;
+  const hasError = list.isLoadingError || progress.isError;
+  const khatmas = active.map((khatma, i) => ({ ...khatma, ...progress.data[i]! }));
 
   return (
     <View className="mt-7">

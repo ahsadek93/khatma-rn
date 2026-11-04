@@ -1,46 +1,22 @@
 import { AppText } from "@/components/AppText";
-import {
-  getCurrentProfile,
-  saveCurrentDisplayName,
-} from "@/features/profile/api";
+import { useMe, useSaveDisplayName } from "@/features/profile/api";
 import { signOut } from "@/features/auth/api";
 import { i18n } from "@/i18n";
 import { useSettings } from "@/stores/settings";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 
 export default function Settings() {
   const { theme, setTheme } = useSettings();
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const { mutateAsync, isPending: saving } = useSaveDisplayName();
   const [signingOut, setSigningOut] = useState(false);
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    void getCurrentProfile()
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error) setMessage(i18n.t("profileLoadError"));
-        if (data) {
-          setDisplayName(data.displayName);
-          setEmail(data.email);
-        }
-        setLoadingProfile(false);
-      })
-      .catch(() => {
-        if (active) {
-          setMessage(i18n.t("profileLoadError"));
-          setLoadingProfile(false);
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const me = useMe();
+  const displayName = draftName ?? me.data?.displayName ?? "";
+  const email = me.data?.email ?? "";
+  const shownMessage = message || (me.error ? i18n.t("profileLoadError") : "");
 
   async function saveName() {
     const name = displayName.trim();
@@ -49,15 +25,12 @@ export default function Settings() {
       setMessage(i18n.t("displayNameInvalid"));
       return;
     }
-    setSaving(true);
     try {
-      const { error } = await saveCurrentDisplayName(name);
-      setMessage(i18n.t(error ? "profileSaveError" : "profileSaved"));
-      if (!error) setDisplayName(name);
+      await mutateAsync(name);
+      setMessage(i18n.t("profileSaved"));
+      setDraftName(null);
     } catch {
       setMessage(i18n.t("profileSaveError"));
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -93,27 +66,27 @@ export default function Settings() {
         accessibilityLabel={i18n.t("displayName")}
         autoCapitalize="words"
         className="h-14 rounded-xl border border-foreground/20 bg-foreground/5 px-4 font-cairo text-base text-foreground"
-        editable={!loadingProfile && !saving}
+        editable={!me.isPending && !saving}
         maxLength={80}
-        onChangeText={setDisplayName}
+        onChangeText={setDraftName}
         placeholder={i18n.t("displayNamePlaceholder")}
         placeholderTextColor="#B8C9BC"
         value={displayName}
       />
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ disabled: loadingProfile || saving }}
+        accessibilityState={{ disabled: me.isPending || saving }}
         className="mt-3 min-h-12 items-center justify-center rounded-xl bg-primary"
-        disabled={loadingProfile || saving}
+        disabled={me.isPending || saving}
         onPress={saveName}
       >
         <AppText className="text-base font-bold text-background">
           {i18n.t(saving ? "loading" : "save")}
         </AppText>
       </Pressable>
-      {!!message && (
+      {!!shownMessage && (
         <AppText accessibilityRole="alert" className="mt-2 text-foreground">
-          {message}
+          {shownMessage}
         </AppText>
       )}
       <AppText className="mb-3 mt-8 text-lg font-bold text-foreground">

@@ -1,83 +1,22 @@
 import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
-import { subscribeToKhatmaUpdates } from "@/features/khatma/realtime";
-import { getMyActiveKhatmas, type KhatmaSummary } from "@/features/khatma/api";
-import { getKhatmaZikrProgress, type ZikrKhatmaProgress } from "@/features/zikr/api";
+import { useKhatmaRealtime } from "@/features/khatma/realtime";
+import { useMyKhatmas } from "@/features/khatma/api";
+import { useKhatmasZikrProgress } from "@/features/zikr/api";
 import { i18n } from "@/i18n";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { router } from "expo-router";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 
-type ActiveZikrKhatma = KhatmaSummary & { progress: ZikrKhatmaProgress };
-
 export function ActiveZikrKhatmaSection() {
-  const [active, setActive] = useState<ActiveZikrKhatma[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const loadRef = useRef<(() => Promise<void>) | null>(null);
   const cardWidth = useWindowDimensions().width - 40;
+  const list = useMyKhatmas("zikr", "active");
+  const khatmas = list.data?.data ?? [];
+  const progress = useKhatmasZikrProgress(khatmas.map(({ id }) => id));
+  useKhatmaRealtime(khatmas.map(({ id }) => id));
 
-  useFocusEffect(useCallback(() => {
-    let current = true;
-    const subscriptions = new Map<string, () => void>();
-    setIsLoading(true);
-    setHasError(false);
-
-    const load = async () => {
-      try {
-        const result = await getMyActiveKhatmas("zikr");
-        if (!current) return;
-        if (result.error) {
-          setHasError(true);
-          setIsLoading(false);
-          return;
-        }
-
-        const progressResults = await Promise.all(result.data.data.map(async (khatma) => ({
-          khatma,
-          result: await getKhatmaZikrProgress(khatma.id),
-        })));
-        if (!current) return;
-        if (progressResults.some(({ result: progress }) => progress.error)) {
-          setHasError(true);
-          setIsLoading(false);
-          return;
-        }
-
-        const nextActive = progressResults.map(({ khatma, result: progress }) => ({ ...khatma, progress: progress.data! }));
-        setActive(nextActive);
-        setHasError(false);
-        setIsLoading(false);
-
-        const activeIds = new Set(nextActive.map((khatma) => khatma.id));
-        for (const [id, unsubscribe] of subscriptions) {
-          if (!activeIds.has(id)) {
-            unsubscribe();
-            subscriptions.delete(id);
-          }
-        }
-        for (const khatma of nextActive) {
-          if (!subscriptions.has(khatma.id)) {
-            subscriptions.set(khatma.id, subscribeToKhatmaUpdates(khatma.id, (event) => {
-              if (event !== "connected") void load();
-            }));
-          }
-        }
-      } catch {
-        if (!current) return;
-        setHasError(true);
-        setIsLoading(false);
-      }
-    };
-
-    loadRef.current = load;
-    void load();
-    return () => {
-      current = false;
-      loadRef.current = null;
-      for (const unsubscribe of subscriptions.values()) unsubscribe();
-    };
-  }, []));
+  const isLoading = list.isPending || progress.isPending;
+  const hasError = list.isLoadingError || progress.isError;
+  const active = khatmas.map((khatma, i) => ({ ...khatma, progress: progress.data[i]! }));
 
   return (
     <View className="mt-7">
@@ -106,7 +45,7 @@ export function ActiveZikrKhatmaSection() {
       ) : hasError ? (
         <View className="mt-3 rounded-2xl border border-subtle-border bg-surface p-4">
           <AppText className="text-sm text-secondary-foreground">{i18n.t("zikrDashboardLoadError")}</AppText>
-          <Pressable accessibilityRole="button" onPress={() => { setIsLoading(true); setHasError(false); void loadRef.current?.(); }} className="mt-3 self-start">
+          <Pressable accessibilityRole="button" onPress={progress.refresh} className="mt-3 self-start">
             <AppText className="font-bold text-primary">{i18n.t("refresh")}</AppText>
           </Pressable>
         </View>

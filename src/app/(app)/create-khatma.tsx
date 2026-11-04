@@ -1,5 +1,5 @@
 import { AppText } from "@/components/AppText";
-import { createKhatma, createZikrKhatma } from "@/features/khatma/api";
+import { useCreateKhatma } from "@/features/khatma/api";
 import type { KhatmaType } from "@/data/contracts";
 import { i18n } from "@/i18n";
 import { router, useLocalSearchParams } from "expo-router";
@@ -13,7 +13,7 @@ export default function CreateKhatmaScreen() {
   const [phrase, setPhrase] = useState("");
   const [goal, setGoal] = useState("");
   const [errorKey, setErrorKey] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const { mutateAsync, isPending: isSaving } = useCreateKhatma();
   const trimmedName = name.trim();
 
   async function handleCreate() {
@@ -29,20 +29,11 @@ export default function CreateKhatmaScreen() {
         return;
       }
     }
-    setIsSaving(true);
     try {
-      const result = type === "zikr"
-        ? await createZikrKhatma(trimmedName, phrase.trim(), Number(goal))
-        : await createKhatma(trimmedName);
-      if (result.error) {
-        setErrorKey(type === "zikr" ? "createZikrKhatmaError" : "createKhatmaError");
-        return;
-      }
+      await mutateAsync(type === "zikr" ? { name: trimmedName, phrase: phrase.trim(), goalCount: Number(goal) } : { name: trimmedName });
       router.replace(type === "zikr" ? "/(app)/zikr" : "/(app)/home");
     } catch {
       setErrorKey(type === "zikr" ? "createZikrKhatmaError" : "createKhatmaError");
-    } finally {
-      setIsSaving(false);
     }
   }
 

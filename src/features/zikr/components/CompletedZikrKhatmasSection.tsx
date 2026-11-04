@@ -1,35 +1,14 @@
 import { AppText } from "@/components/AppText";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
-import { getMyCompletedKhatmas, type CompletedKhatma } from "@/features/khatma/api";
+import { useMyKhatmas } from "@/features/khatma/api";
 import { i18n } from "@/i18n";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { router } from "expo-router";
 import { Pressable, View } from "react-native";
 
 export function CompletedZikrKhatmasSection() {
-  const [khatmas, setKhatmas] = useState<CompletedKhatma[]>([]);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-
-  useFocusEffect(useCallback(() => {
-    let isCurrent = true;
-    void getMyCompletedKhatmas("zikr").then(({ data, error }) => {
-      if (!isCurrent) return;
-      if (error || !data) setHasError(true);
-      else {
-        setKhatmas(data.data);
-        setTotal(data.pagination.total);
-        setHasError(false);
-      }
-      setIsLoading(false);
-    }).catch(() => {
-      if (!isCurrent) return;
-      setHasError(true);
-      setIsLoading(false);
-    });
-    return () => { isCurrent = false; };
-  }, []));
+  const { data, isPending: isLoading, isError: hasError } = useMyKhatmas("zikr", "completed");
+  const khatmas = data?.data ?? [];
+  const total = data?.pagination.total ?? 0;
 
   return (
     <View className="mt-7">
